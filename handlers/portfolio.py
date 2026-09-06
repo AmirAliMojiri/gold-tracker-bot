@@ -7,7 +7,6 @@ from database import db_service
 from tgju_service import tgju_service
 from states import HoldingStates
 from keyboards import (
-    get_main_menu_keyboard,
     get_categories_keyboard,
     get_gold_items_keyboard,
     get_silver_items_keyboard,
@@ -248,16 +247,11 @@ async def render_portfolio_summary(user_id: int) -> str:
 
 # نمایش دارایی من
 @router.message(Command("portfolio"))
+@router.message(F.text == "💼 دارایی‌های من (پرتفوی)")
 async def cmd_portfolio(message: Message, state: FSMContext):
     await state.clear()
     msg = await render_portfolio_summary(message.from_user.id)
-    kb = InlineKeyboardMarkup(inline_keyboard=[
-        [
-            InlineKeyboardButton(text="🔙 بازگشت به منوی اصلی", callback_data="btn_main_menu"),
-            InlineKeyboardButton(text="❌ بستن", callback_data="btn_close_menu"),
-        ]
-    ])
-    await message.answer(msg, reply_markup=kb, parse_mode="Markdown")
+    await message.answer(msg, parse_mode="Markdown")
 
 @router.callback_query(F.data == "btn_portfolio_summary")
 async def cb_portfolio_summary(call: CallbackQuery, state: FSMContext):
@@ -266,7 +260,6 @@ async def cb_portfolio_summary(call: CallbackQuery, state: FSMContext):
     msg = await render_portfolio_summary(call.from_user.id)
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text="🔙 بازگشت به منوی اصلی", callback_data="btn_main_menu"),
             InlineKeyboardButton(text="❌ بستن", callback_data="btn_close_menu"),
         ]
     ])
@@ -277,6 +270,7 @@ async def cb_portfolio_summary(call: CallbackQuery, state: FSMContext):
 
 # ثبت و ویرایش دارایی
 @router.message(Command("manage"))
+@router.message(F.text == "➕ ثبت و ویرایش دارایی")
 async def cmd_manage(message: Message, state: FSMContext):
     await state.clear()
     text = "📁 **دسته‌بندی دارایی مورد نظر برای ثبت یا ویرایش را انتخاب کنید:**"
@@ -373,7 +367,7 @@ async def process_main_value(message: Message, state: FSMContext):
         await db_service.update_main_holding(message.from_user.id, field_name, 0.0, 0.0)
         await state.clear()
         ans = f"✅ **{title}** با موفقیت از سبد دارایی شما حذف شد."
-        await message.answer(ans, reply_markup=get_main_menu_keyboard(), parse_mode="Markdown")
+        await message.answer(ans, parse_mode="Markdown")
         return
 
     await state.update_data(amount=value)
@@ -400,7 +394,7 @@ async def cb_skip_main_buy_price(call: CallbackQuery, state: FSMContext):
     await state.clear()
 
     ans = f"✅ موجودی **{title}** به مقدار `{amount:g} {unit}` (بدون قیمت خرید) ثبت و ذخیره شد."
-    await call.message.edit_text(ans, reply_markup=get_main_menu_keyboard(), parse_mode="Markdown")
+    await call.message.edit_text(ans, parse_mode="Markdown")
     await call.answer("دارایی ثبت شد.")
 
 @router.message(HoldingStates.waiting_for_main_buy_price)
@@ -431,7 +425,7 @@ async def process_main_buy_price(message: Message, state: FSMContext):
         f"🔹 مقدار: `{amount:g} {unit}`\n"
         f"🔹 قیمت خرید واحد: `{format_price(buy_price)}`"
     )
-    await message.answer(ans, reply_markup=get_main_menu_keyboard(), parse_mode="Markdown")
+    await message.answer(ans, parse_mode="Markdown")
 
 # پارسیان
 @router.callback_query(F.data.startswith("parsian_"))
@@ -509,7 +503,7 @@ async def process_parsian_quantity(message: Message, state: FSMContext):
         await db_service.update_parsian_holding(message.from_user.id, weight, 0, 0.0)
         await state.clear()
         ans = f"✅ سکه پارسیان `{weight:g} گرمی` از دارایی‌های شما حذف شد."
-        await message.answer(ans, reply_markup=get_main_menu_keyboard(), parse_mode="Markdown")
+        await message.answer(ans, parse_mode="Markdown")
         return
 
     await state.update_data(parsian_qty=qty)
@@ -533,7 +527,7 @@ async def cb_skip_parsian_buy_price(call: CallbackQuery, state: FSMContext):
     await state.clear()
 
     ans = f"✅ تعداد `{qty} عدد` سکه پارسیان `{weight:g} گرمی` با موفقیت ذخیره شد."
-    await call.message.edit_text(ans, reply_markup=get_main_menu_keyboard(), parse_mode="Markdown")
+    await call.message.edit_text(ans, parse_mode="Markdown")
     await call.answer("پارسیان ثبت شد.")
 
 @router.message(HoldingStates.waiting_for_parsian_buy_price)
@@ -562,4 +556,4 @@ async def process_parsian_buy_price(message: Message, state: FSMContext):
         f"🔹 تعداد: `{qty} عدد`\n"
         f"🔹 قیمت خرید واحد: `{format_price(buy_price)}`"
     )
-    await message.answer(ans, reply_markup=get_main_menu_keyboard(), parse_mode="Markdown")
+    await message.answer(ans, parse_mode="Markdown")

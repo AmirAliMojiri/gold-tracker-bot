@@ -8,8 +8,7 @@ from states import HoldingStates
 from keyboards import (
     get_alerts_menu_keyboard,
     get_alert_items_keyboard,
-    get_cancel_keyboard,
-    get_main_menu_keyboard
+    get_cancel_keyboard
 )
 
 router = Router()
@@ -34,7 +33,7 @@ ALERT_ITEM_NAMES = {
     'coin_rob_new': 'ربع سکه',
     'currency_usd': 'دلار آمریکا',
     'currency_usdt': 'تتر (USDT)',
-    'silver_999': 'گرم نقره ۹۹۹',
+    'silver_999': 'نقره ۹۹۹',
 }
 
 async def render_alerts_menu(user_id: int) -> tuple[str, InlineKeyboardMarkup]:
@@ -48,6 +47,7 @@ async def render_alerts_menu(user_id: int) -> tuple[str, InlineKeyboardMarkup]:
     return text, get_alerts_menu_keyboard(daily_en)
 
 @router.message(Command("alerts"))
+@router.message(F.text == "🔔 هشدارهای قیمت")
 async def cmd_alerts_menu(message: Message, state: FSMContext):
     await state.clear()
     text, kb = await render_alerts_menu(message.from_user.id)
@@ -187,7 +187,7 @@ async def process_alert_target(message: Message, state: FSMContext):
         f"💰 **قیمت فعلی:** `{format_price(curr_p)}`\n\n"
         f"به محض رسیدن بازار به این رقم، ربات در تلگرام به شما پیام هشدار خواهد داد."
     )
-    await message.answer(ans, reply_markup=get_main_menu_keyboard(), parse_mode="Markdown")
+    await message.answer(ans, parse_mode="Markdown")
 
 @router.callback_query(F.data == "alert_my_list")
 async def cb_my_alerts(call: CallbackQuery):

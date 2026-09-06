@@ -1,33 +1,33 @@
 from aiogram.types import (
-    ReplyKeyboardRemove,
+    ReplyKeyboardMarkup,
+    KeyboardButton,
     InlineKeyboardMarkup,
     InlineKeyboardButton
 )
 
-def remove_keyboard() -> ReplyKeyboardRemove:
-    """بستن و حذف کامل کیبورد پایین صفحه جهت آزادسازی دکمه بازگشت گوشی"""
-    return ReplyKeyboardRemove()
-
-def get_main_menu_keyboard() -> InlineKeyboardMarkup:
-    """منوی اصلی شیشه‌ای ربات"""
+def get_main_reply_keyboard() -> ReplyKeyboardMarkup:
+    """
+    منوی کیبورد استاندارد تلگرام با قابلیت باز و بسته شدن از طریق آیکون [::]
+    """
     keyboard = [
         [
-            InlineKeyboardButton(text="💼 دارایی‌های من (پرتفوی)", callback_data="btn_portfolio_summary"),
+            KeyboardButton(text="💼 دارایی‌های من (پرتفوی)"),
+            KeyboardButton(text="➕ ثبت و ویرایش دارایی"),
         ],
         [
-            InlineKeyboardButton(text="➕ ثبت و ویرایش دارایی", callback_data="btn_manage_holdings"),
-            InlineKeyboardButton(text="📈 نرخ‌های لحظه‌ای بازار", callback_data="btn_live_prices"),
+            KeyboardButton(text="📈 نرخ‌های لحظه‌ای بازار"),
+            KeyboardButton(text="💡 پیشنهاد خرید با بودجه"),
         ],
         [
-            InlineKeyboardButton(text="💡 پیشنهاد خرید با بودجه", callback_data="btn_smart_advisor"),
-            InlineKeyboardButton(text="🔔 هشدارهای قیمت", callback_data="btn_alerts_menu"),
-        ],
-        [
-            InlineKeyboardButton(text="🗑 پاک‌سازی سبد", callback_data="btn_clear_confirm"),
-            InlineKeyboardButton(text="❌ بستن منو", callback_data="btn_close_menu"),
+            KeyboardButton(text="🔔 هشدارهای قیمت"),
+            KeyboardButton(text="🗑 پاک‌سازی سبد"),
         ]
     ]
-    return InlineKeyboardMarkup(inline_keyboard=keyboard)
+    return ReplyKeyboardMarkup(
+        keyboard=keyboard,
+        resize_keyboard=True,
+        is_persistent=False  # امکان کوچک شدن و بسته شدن به آیکون 4 مربعی [::]
+    )
 
 # --- دسته‌بندی‌های دارایی جهت ثبت ---
 def get_categories_keyboard() -> InlineKeyboardMarkup:
@@ -49,8 +49,7 @@ def get_categories_keyboard() -> InlineKeyboardMarkup:
             InlineKeyboardButton(text="💵 ارزها و تتر (دلار، یورو و...)", callback_data="cat_currency"),
         ],
         [
-            InlineKeyboardButton(text="🔙 بازگشت به منوی اصلی", callback_data="btn_main_menu"),
-            InlineKeyboardButton(text="❌ بستن", callback_data="btn_close_menu"),
+            InlineKeyboardButton(text="❌ بستن / انصراف", callback_data="btn_close_menu"),
         ]
     ]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
@@ -184,7 +183,6 @@ def get_alerts_menu_keyboard(daily_en: bool = True) -> InlineKeyboardMarkup:
             InlineKeyboardButton(text=digest_text, callback_data="toggle_daily_digest"),
         ],
         [
-            InlineKeyboardButton(text="🔙 بازگشت به منوی اصلی", callback_data="btn_main_menu"),
             InlineKeyboardButton(text="❌ بستن", callback_data="btn_close_menu"),
         ]
     ]
@@ -233,7 +231,6 @@ def get_quick_budget_keyboard() -> InlineKeyboardMarkup:
             InlineKeyboardButton(text="✏️ مبلغ دلخواه دیگر", callback_data="budget_custom"),
         ],
         [
-            InlineKeyboardButton(text="🔙 بازگشت به منوی اصلی", callback_data="btn_main_menu"),
             InlineKeyboardButton(text="❌ بستن", callback_data="btn_close_menu"),
         ]
     ]
@@ -262,16 +259,7 @@ def get_clear_confirmation_keyboard() -> InlineKeyboardMarkup:
     keyboard = [
         [
             InlineKeyboardButton(text="⚠️ بله، همه را پاک کن", callback_data="btn_clear_execute"),
-            InlineKeyboardButton(text="❌ انصراف و بازگشت", callback_data="btn_main_menu"),
-        ]
-    ]
-    return InlineKeyboardMarkup(inline_keyboard=keyboard)
-
-def get_back_to_main_keyboard() -> InlineKeyboardMarkup:
-    keyboard = [
-        [
-            InlineKeyboardButton(text="🔙 بازگشت به منوی اصلی", callback_data="btn_main_menu"),
-            InlineKeyboardButton(text="❌ بستن", callback_data="btn_close_menu"),
+            InlineKeyboardButton(text="❌ انصراف", callback_data="btn_close_menu"),
         ]
     ]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)

@@ -7,8 +7,7 @@ from advisor import advisor_service
 from states import HoldingStates
 from keyboards import (
     get_quick_budget_keyboard,
-    get_cancel_keyboard,
-    get_main_menu_keyboard
+    get_cancel_keyboard
 )
 
 router = Router()
@@ -52,6 +51,7 @@ async def generate_advisor_response(budget_toman: float) -> str:
     return "\n".join(lines)
 
 @router.message(Command("advisor"))
+@router.message(F.text == "💡 پیشنهاد خرید با بودجه")
 async def cmd_smart_advisor(message: Message, state: FSMContext):
     await state.clear()
     prompt = (
@@ -98,7 +98,6 @@ async def cb_select_budget(call: CallbackQuery, state: FSMContext):
     response_text = await generate_advisor_response(budget)
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text="🔙 بازگشت به منوی اصلی", callback_data="btn_main_menu"),
             InlineKeyboardButton(text="❌ بستن", callback_data="btn_close_menu"),
         ]
     ])
@@ -123,7 +122,6 @@ async def process_custom_budget(message: Message, state: FSMContext):
     response_text = await generate_advisor_response(budget)
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text="🔙 بازگشت به منوی اصلی", callback_data="btn_main_menu"),
             InlineKeyboardButton(text="❌ بستن", callback_data="btn_close_menu"),
         ]
     ])
