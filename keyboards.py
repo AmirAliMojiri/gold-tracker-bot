@@ -7,6 +7,9 @@ def get_main_menu_keyboard() -> InlineKeyboardMarkup:
             InlineKeyboardButton(text="📊 ارزش سبد و سود/زیان من", callback_data="btn_portfolio_summary"),
         ],
         [
+            InlineKeyboardButton(text="💡 پیشنهاد خرید بر اساس بودجه", callback_data="btn_smart_advisor"),
+        ],
+        [
             InlineKeyboardButton(text="➕ ثبت و ویرایش دارایی‌ها", callback_data="btn_manage_holdings"),
             InlineKeyboardButton(text="📈 نرخ‌های لحظه‌ای بازار", callback_data="btn_live_prices"),
         ],
@@ -141,6 +144,27 @@ def get_parsian_keyboard() -> InlineKeyboardMarkup:
         ],
         [
             InlineKeyboardButton(text="🔙 بازگشت به دسته‌ها", callback_data="btn_manage_holdings")],
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+def get_quick_budget_keyboard() -> InlineKeyboardMarkup:
+    """دکمه‌های سریع مبالغ بودجه جهت مشاوره خرید"""
+    keyboard = [
+        [
+            InlineKeyboardButton(text="۵ میلیون تومان", callback_data="budget_5000000"),
+            InlineKeyboardButton(text="۱۰ میلیون تومان", callback_data="budget_10000000"),
+        ],
+        [
+            InlineKeyboardButton(text="۲۰ میلیون تومان", callback_data="budget_20000000"),
+            InlineKeyboardButton(text="۵۰ میلیون تومان", callback_data="budget_50000000"),
+        ],
+        [
+            InlineKeyboardButton(text="۱۰۰ میلیون تومان", callback_data="budget_100000000"),
+            InlineKeyboardButton(text="✏️ مبلغ دلخواه دیگر", callback_data="budget_custom"),
+        ],
+        [
+            InlineKeyboardButton(text="🔙 بازگشت به منوی اصلی", callback_data="btn_main_menu"),
+        ]
     ]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 

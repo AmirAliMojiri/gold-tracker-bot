@@ -10,3 +10,6 @@ class HoldingStates(StatesGroup):
     waiting_for_parsian_weight = State()
     waiting_for_parsian_quantity = State()
     waiting_for_parsian_buy_price = State()
+
+    # مرحله دریافت بودجه برای مشاور هوشمند خرید
+    waiting_for_advisor_budget = State()
