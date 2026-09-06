@@ -1,21 +1,12 @@
 from aiogram.types import (
-    ReplyKeyboardMarkup,
-    KeyboardButton,
+    ReplyKeyboardRemove,
     InlineKeyboardMarkup,
     InlineKeyboardButton
 )
 
-def get_home_reply_keyboard() -> ReplyKeyboardMarkup:
-    """دکمه مینیمال و شیک خانه در پایین صفحه (مطابق تصویر)"""
-    keyboard = [
-        [KeyboardButton(text="🏠")]
-    ]
-    return ReplyKeyboardMarkup(
-        keyboard=keyboard,
-        resize_keyboard=True,
-        is_persistent=True,
-        input_field_placeholder="منو را باز کنید..."
-    )
+def remove_keyboard() -> ReplyKeyboardRemove:
+    """بستن و حذف کامل کیبورد پایین صفحه جهت آزادسازی دکمه بازگشت گوشی"""
+    return ReplyKeyboardRemove()
 
 def get_main_menu_keyboard() -> InlineKeyboardMarkup:
     """منوی اصلی شیشه‌ای ربات"""

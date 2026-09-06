@@ -4,7 +4,7 @@ from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 from database import db_service
 from keyboards import (
-    get_home_reply_keyboard,
+    remove_keyboard,
     get_main_menu_keyboard,
     get_clear_confirmation_keyboard
 )
@@ -13,7 +13,7 @@ router = Router()
 
 START_TEXT = (
     "🌟 **سامانه هوشمند مدیریت دارایی و سرمایه‌گذاری طلا، سکه و ارز**\n\n"
-    "این ربات دارایی‌های شما را به صورت امن و دائمی ذخیره کرده و در هر لحظه ارزش روز بازار و سود/زیان را بر مبنای نرخ‌های زنده `TGJU.org` محاسبه می‌کند.\n\n"
+    "این ربات دارایی‌های شما را به صورت دائمی ذخیره کرده و در هر لحظه ارزش روز بازار و سود/زیان را بر مبنای نرخ‌های زنده `TGJU.org` محاسبه می‌کند.\n\n"
     "👇 **لطفاً یکی از بخش‌های زیر را انتخاب فرمایید:**"
 )
 
@@ -24,7 +24,7 @@ HELP_TEXT = (
     "• 📈 **نرخ‌های بازار:** تابلوی قیمت لحظه‌ای طلا، سکه و ارزها\n"
     "• 💡 **پیشنهاد خرید:** مشاور هوشمند تخصیص بودجه برای خرید بهینه\n"
     "• 🔔 **هشدارهای قیمت:** تعیین تارگت قیمتی و رادار حباب سکه\n"
-    "• 🏠 **دکمه خانه:** باز کردن سریع منوی اصلی در هر زمان"
+    "• ❌ **بستن منو:** حذف و بستن پیام منو در هر زمان"
 )
 
 @router.message(CommandStart())
@@ -36,20 +36,21 @@ async def cmd_start(message: Message, state: FSMContext):
         first_name=user.first_name,
         username=user.username
     )
-    # ارسال کیبورد خانه در پایین صفحه + منوی شیشه‌ای اصلی
+    # حذف کامل کیبورد پایین صفحه جهت بازگشت به حالت استاندارد تلگرام و خروج راحت با دکمه بک گوشی
+    await message.answer(
+        "👋 سلام! منوی ربات آماده استفاده است:",
+        reply_markup=remove_keyboard()
+    )
     await message.answer(
         START_TEXT,
         reply_markup=get_main_menu_keyboard(),
         parse_mode="Markdown"
     )
-    await message.answer(
-        "💡 برای دسترسی سریع به منوی اصلی در هر زمان، می‌توانید دکمه 🏠 پایین صفحه را لمس کنید.",
-        reply_markup=get_home_reply_keyboard()
-    )
 
-# لمس دکمه 🏠 در پایین صفحه یا تایپ /home
-@router.message(F.text.in_(["🏠", "خانه", "/home", "/menu"]))
-async def msg_home_button(message: Message, state: FSMContext):
+# لمس یا ارسال دستور /home یا /menu
+@router.message(Command("home"))
+@router.message(Command("menu"))
+async def cmd_home(message: Message, state: FSMContext):
     await state.clear()
     await message.answer(
         START_TEXT,
@@ -72,7 +73,7 @@ async def cb_main_menu(call: CallbackQuery, state: FSMContext):
         await call.message.answer(START_TEXT, reply_markup=get_main_menu_keyboard(), parse_mode="Markdown")
     await call.answer()
 
-# بستن منو (حذف پیام)
+# بستن کامل منو و پاکسازی پیام
 @router.callback_query(F.data == "btn_close_menu")
 async def cb_close_menu(call: CallbackQuery, state: FSMContext):
     await state.clear()
