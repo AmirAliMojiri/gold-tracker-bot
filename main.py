@@ -10,6 +10,7 @@ from aiogram.client.session.aiohttp import AiohttpSession
 from config import BOT_TOKEN, PROXY_URL
 from database import db_service
 from handlers import main_router
+from scheduler import AlertScheduler
 
 # تنظیم لاگ‌ها
 logging.basicConfig(
@@ -29,7 +30,6 @@ async def main():
         print("="*60 + "\n")
         return
 
-    # تنظیمات سشن و پروکسی در صورت وجود
     session = None
     if PROXY_URL:
         logger.info(f"🌐 استفاده از پروکسی: {PROXY_URL}")
@@ -44,17 +44,21 @@ async def main():
     dp = Dispatcher(storage=MemoryStorage())
     dp.include_router(main_router)
 
-    # راه‌اندازی دیتابیس
     logger.info("🗄 در حال بررسی و آماده‌سازی پایگاه داده...")
     await db_service.init_db()
 
-    # حذف وب‌هوک‌های قبلی در صورت وجود
+    # راه‌اندازی تسک پس‌زمینه بررسی هشدارها و گزارش شبانگاهی
+    scheduler = AlertScheduler(bot)
+    scheduler_task = asyncio.create_task(scheduler.start())
+
     await bot.delete_webhook(drop_pending_updates=True)
     logger.info("🚀 ربات با موفقیت راه‌اندازی شد و آماده دریافت پیام است...")
 
     try:
         await dp.start_polling(bot)
     finally:
+        scheduler.stop()
+        scheduler_task.cancel()
         await bot.session.close()
 
 if __name__ == "__main__":

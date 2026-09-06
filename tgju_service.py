@@ -8,7 +8,7 @@ from typing import Dict, Any, Optional
 
 class TGJUService:
     """
-    سرویس دریافت و کش قیمت‌های زنده طلا، سکه، نقره و ارزها از سایت TGJU.org
+    سرویس دریافت و کش قیمت‌های زنده طلا، سکه، نقره، ارزها و حباب از سایت TGJU.org
     """
     CACHE_DURATION = 120  # مدت زمان کش: ۲ دقیقه (بر حسب ثانیه)
 
@@ -26,7 +26,6 @@ class TGJUService:
         'home': 'https://www.tgju.org/',
     }
 
-    # نگاشت کدهای طلا و آبشده
     GOLD_KEYS = {
         'geram18': ('طلای ۱۸ عیار', 'gold_18k'),
         'geram24': ('طلای ۲۴ عیار', 'gold_24k'),
@@ -36,13 +35,11 @@ class TGJUService:
         'gold_melted_transfer': ('آبشده معاملاتی', 'gold_melted_alt'),
     }
 
-    # نگاشت کدهای نقره
     SILVER_KEYS = {
         'silver_999': ('گرم نقره ۹۹۹ (خالص/شمش)', 'silver_999'),
         'silver_925': ('گرم نقره ۹۲۵ (استرلینگ)', 'silver_925'),
     }
 
-    # نگاشت کدهای سکه‌ها
     COIN_KEYS = {
         'retail_sekee': ('سکه امامی (طرح جدید)', 'coin_emami'),
         'sekee': ('سکه امامی', 'coin_emami_alt'),
@@ -58,7 +55,14 @@ class TGJUService:
         'gerami': ('سکه گرمی', 'coin_grami_alt'),
     }
 
-    # نگاشت کدهای ارزها
+    BUBBLE_KEYS = {
+        'coin_blubber': ('حباب سکه امامی', 'bubble_emami'),
+        'sekeb_blubber': ('حباب بهار آزادی', 'bubble_bahar'),
+        'nim_blubber': ('حباب نیم سکه', 'bubble_nim'),
+        'rob_blubber': ('حباب ربع سکه', 'bubble_rob'),
+        'gerami_blubber': ('حباب سکه گرمی', 'bubble_grami'),
+    }
+
     CURRENCY_KEYS = {
         'price_dollar_rl': ('دلار آمریکا', 'currency_usd'),
         'crypto-tether-irr': ('تتر (USDT)', 'currency_usdt'),
@@ -79,14 +83,12 @@ class TGJUService:
 
     @staticmethod
     def _clean_number(text: str) -> Optional[int]:
-        """تبدیل رشته‌های شامل کاما و ارقام فارسی/انگلیسی به عدد صحیح ریال"""
         if not text:
             return None
         persian_digits = '۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩'
         english_digits = '01234567890123456789'
         translation_table = str.maketrans(persian_digits, english_digits)
         text = text.translate(translation_table)
-        
         cleaned = re.sub(r'[^\d]', '', text)
         if cleaned:
             try:
@@ -105,10 +107,6 @@ class TGJUService:
         return ""
 
     async def get_all_prices(self, force_refresh: bool = False) -> Dict[str, Any]:
-        """
-        دریافت تمام قیمت‌های روز از TGJU با سیستم کش
-        خروجی شامل مبالغ به تومان است.
-        """
         async with self._lock:
             current_time = time.time()
             if not force_refresh and self._cache and (current_time - self._last_fetch_time < self.CACHE_DURATION):
@@ -132,12 +130,13 @@ class TGJUService:
                 'gold': {},
                 'silver': {},
                 'coins': {},
+                'bubbles': {},
                 'currencies': {},
                 'parsian': {},
                 'updated_at': time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
             }
 
-            # ۱. تجزیه قیمت‌های طلا و نقره
+            # ۱. طلا و نقره
             if gold_html:
                 try:
                     tree = html.fromstring(gold_html)
@@ -166,19 +165,19 @@ class TGJUService:
                 except Exception as e:
                     print(f"Error parsing gold HTML: {e}")
 
-            # ۲. تجزیه قیمت‌های سکه
+            # ۲. سکه‌ها و حباب‌ها
             if coin_html:
                 try:
                     tree = html.fromstring(coin_html)
                     for row in tree.xpath('//tr[@data-market-row]'):
                         row_id = row.get('data-market-row', '').strip()
-                        if row_id in self.COIN_KEYS:
-                            title, internal_key = self.COIN_KEYS[row_id]
-                            price_nodes = row.xpath('.//td[@class="current"]//text() | .//td[contains(@class,"nf")][1]//text() | .//td[1]//text()')
-                            price_raw = ' '.join(''.join(price_nodes).split())
-                            rial_val = self._clean_number(price_raw)
-                            if rial_val:
-                                toman_val = rial_val // 10
+                        price_nodes = row.xpath('.//td[@class="current"]//text() | .//td[contains(@class,"nf")][1]//text() | .//td[1]//text()')
+                        price_raw = ' '.join(''.join(price_nodes).split())
+                        rial_val = self._clean_number(price_raw)
+                        if rial_val:
+                            toman_val = rial_val // 10
+                            if row_id in self.COIN_KEYS:
+                                title, internal_key = self.COIN_KEYS[row_id]
                                 target_key = internal_key.replace('_alt', '')
                                 if target_key not in prices_data['coins'] or not internal_key.endswith('_alt'):
                                     prices_data['coins'][target_key] = {
@@ -186,10 +185,32 @@ class TGJUService:
                                         'toman': toman_val,
                                         'rial': rial_val,
                                     }
+                            elif row_id in self.BUBBLE_KEYS:
+                                title, internal_key = self.BUBBLE_KEYS[row_id]
+                                prices_data['bubbles'][internal_key] = {
+                                    'title': title,
+                                    'toman': toman_val,
+                                    'rial': rial_val,
+                                }
                 except Exception as e:
                     print(f"Error parsing coin HTML: {e}")
 
-            # ۳. تجزیه قیمت‌های ارز (ترکیب صفحه ارز و صفحه اصلی برای تتر)
+            # محاسبه درصدی حباب سکه‌ها
+            for coin_k, bub_k, base_k in [
+                ('coin_emami', 'bubble_emami', 'emami_pct'),
+                ('coin_bahar', 'bubble_bahar', 'bahar_pct'),
+                ('coin_half_new', 'bubble_nim', 'nim_pct'),
+                ('coin_rob_new', 'bubble_rob', 'rob_pct'),
+                ('coin_grami', 'bubble_grami', 'grami_pct'),
+            ]:
+                if coin_k in prices_data['coins'] and bub_k in prices_data['bubbles']:
+                    c_price = prices_data['coins'][coin_k]['toman']
+                    b_val = prices_data['bubbles'][bub_k]['toman']
+                    if c_price > 0:
+                        pct = (b_val / c_price) * 100
+                        prices_data['bubbles'][bub_k]['percentage'] = round(pct, 1)
+
+            # ۳. ارزها
             for raw_html in [currency_html, home_html]:
                 if not raw_html:
                     continue
@@ -214,7 +235,7 @@ class TGJUService:
                 except Exception as e:
                     print(f"Error parsing currency HTML: {e}")
 
-            # ۴. تجزیه قیمت‌های پارسیان
+            # ۴. پارسیان
             if parsian_html:
                 try:
                     tree = html.fromstring(parsian_html)
@@ -242,7 +263,6 @@ class TGJUService:
                 except Exception as e:
                     print(f"Error parsing parsian HTML: {e}")
 
-            # بررسی و تنظیم کش در صورت موفقیت
             if prices_data['gold'] or prices_data['coins'] or prices_data['currencies']:
                 self._cache = prices_data
                 self._last_fetch_time = current_time
@@ -250,7 +270,6 @@ class TGJUService:
             return self._cache or prices_data
 
     def estimate_parsian_price(self, weight_grams: float, prices: Dict[str, Any]) -> int:
-        """تخمین قیمت سکه پارسیان در صورت عدم وجود وزن در جدول TGJU"""
         weight_key = f"{weight_grams:.3f}"
         parsian_table = prices.get('parsian', {})
         if weight_key in parsian_table:
