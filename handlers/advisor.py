@@ -25,27 +25,64 @@ def format_price(toman: float) -> str:
 
 async def generate_advisor_response(budget_toman: float) -> str:
     prices = await tgju_service.get_all_prices()
-    recommendations = advisor_service.analyze_best_options(budget_toman, prices)
+    report = advisor_service.analyze_macro_portfolio(budget_toman, prices)
+
+    allocations = report['allocations']
+    dca = report['dca_tranches']
+    macro = report['macro_metrics']
 
     lines = [
-        f"💡 **تحلیل هوشمند بازار و گزینه‌های بهینه خرید**",
-        f"💵 بودجه شما: `{format_price(budget_toman)}`\n",
-        "🎯 **اولویت‌بندی دارایی‌ها بر اساس بازدهی، حباب قیمتی و کارمزد:**\n"
+        "📊 **استراتژی تخصصی و سبدگردانی هوشمند اقتصاد کلان**",
+        f"💵 سرمایه در دسترس: `{format_price(budget_toman)}`\n",
+        "━━━━━━━━━━━━━━━━━━━━",
+        "🌐 **شاخص‌های کلیدی اقتصاد کلان و متغیرهای بازار:**"
     ]
 
-    for idx, rec in enumerate(recommendations, 1):
+    # شاخص‌های جهانی
+    if macro.get('ons_gold') or macro.get('ons_silver'):
+        g_str = f"${macro['ons_gold']:,.2f}" if macro.get('ons_gold') else "-"
+        s_str = f"${macro['ons_silver']:,.2f}" if macro.get('ons_silver') else "-"
+        lines.append(f"• 🥇 **انس طلای جهانی:** `{g_str}` | 🥈 **انس نقره:** `{s_str}`")
+
+    if macro.get('gsr'):
+        gsr_val = macro['gsr']
+        gsr_comment = "ارزندگی تاریخی نقره نسبت به طلا در مقیاس جهانی (GSR بالای ۶۵)" if gsr_val >= 65 else "تعادل نسبی در برابری طلا و نقره"
+        lines.append(f"• ⚖️ **نسبت طلا به نقره (GSR):** `{gsr_val}` (↳ *{gsr_comment}*)")
+
+    # حباب سکه
+    if macro.get('bubble_emami_pct') is not None and macro.get('bubble_emami_val'):
+        b_pct = macro['bubble_emami_pct']
+        b_val = macro['bubble_emami_val']
+        intr = macro.get('intrinsic_emami', 0)
+        intr_str = f" | ارزش ذاتی طلا: `{format_price(intr)}`" if intr else ""
+        lines.append(f"• 🪙 **حباب سکه امامی:** `{format_price(b_val)}` (`{b_pct}%`){intr_str}")
+
+    lines.append("\n━━━━━━━━━━━━━━━━━━━━")
+    lines.append("🎯 **ماتریس بهینه تخصیص دارایی (Portfolio Allocation):**\n")
+
+    for idx, item in enumerate(allocations, 1):
         lines.append(
-            f"**{idx}. {rec['title']}** ({rec['category']})\n"
-            f"  🔹 مقدار قابل خرید: `{rec['affordable_qty']}`\n"
-            f"  🔹 نرخ هر واحد: `{format_price(rec['unit_price'])}`\n"
-            f"  🔹 سطح ریسک: `{rec['risk']}`\n"
-            f"  📋 **دلیل اولویت:**\n{rec['reason']}\n"
+            f"**{idx}. {item['name']} ({item['weight_pct']}٪ وزن سبد):**\n"
+            f"  🔹 بودجه تخصیصی: `{format_price(item['budget_share'])}` (مقدار هدف: `{item['target_units']}`)\n"
+            f"  🔹 منطق تحلیلی: {item['role']}\n"
+            f"  🔹 سطح ریسک: `{item['risk']}`\n"
+        )
+
+    lines.append("━━━━━━━━━━━━━━━━━━━━")
+    lines.append("📈 **استراتژی اجرای ورود پله‌ای (DCA Tranches):**\n")
+
+    for tranche in dca:
+        lines.append(
+            f"• **{tranche['tranche']}** — سهم: `{tranche['pct']}` (`{format_price(tranche['amount'])}`)\n"
+            f"  ↳ {tranche['action']}\n"
         )
 
     lines.append(
         "━━━━━━━━━━━━━━━━━━━━\n"
-        "🔍 **جمع‌بندی تحلیلی برای بازه ۳ تا ۶ ماهه:**\n"
-        "• برای بودجه‌های خرد، **نقره ۹۹۹** و **سکه‌های پارسیان/صندوق‌های طلا** به دلیل حذف حباب سکه، بهترین ارزش خرید را دارند."
+        "⏱ **افق سرمایه‌گذاری و مدیریت ریسک:**\n"
+        "• **افق زمانی:** میان‌مدت (۳ الی ۶ ماهه)\n"
+        "• **نسبت پاداش به ریسک (R/R):** برآورد بالای ۲.۵ بر پایه روندهای انقباضی نقدینگی و تورم ساختاری\n"
+        "• **نکته کلیدی تریدرها:** به هیچ عنوان تمام نقدینگی را در یک سفارش تک‌پله‌ای وارد نکنید و پله‌های حمایتی را رعایت فرمایید."
     )
 
     return "\n".join(lines)

@@ -263,3 +263,30 @@ def get_clear_confirmation_keyboard() -> InlineKeyboardMarkup:
         ]
     ]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+def get_prices_view_keyboard(active_view: str = "summary") -> InlineKeyboardMarkup:
+    """
+    منوی شیشه‌ای هوشمند برای جابجایی بین نمای خلاصه و سقف و کف روزانه دسته‌بندی‌ها
+    """
+    keyboard = [
+        [
+            InlineKeyboardButton(text="📊 دامنه نوسان کامل (سقف و کف همه)", callback_data="priceview_range_all"),
+        ],
+        [
+            InlineKeyboardButton(text="✨ طلا و آبشده (سقف/کف)", callback_data="priceview_range_gold"),
+            InlineKeyboardButton(text="🪙 سکه‌ها (سقف/کف)", callback_data="priceview_range_coins"),
+        ],
+        [
+            InlineKeyboardButton(text="💵 ارزها و تتر (سقف/کف)", callback_data="priceview_range_currencies"),
+            InlineKeyboardButton(text="⚪️ نقره (سقف/کف)", callback_data="priceview_range_silver"),
+        ],
+        [
+            InlineKeyboardButton(text="🔄 بروزرسانی نرخ‌ها", callback_data=f"priceview_{active_view}"),
+            InlineKeyboardButton(text="📋 تابلوی ساده نرخ‌ها", callback_data="priceview_summary"),
+        ],
+        [
+            InlineKeyboardButton(text="❌ بستن تابلوی قیمت", callback_data="btn_close_menu"),
+        ]
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=keyboard)
+

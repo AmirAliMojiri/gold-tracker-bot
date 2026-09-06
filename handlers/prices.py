@@ -1,23 +1,36 @@
+from typing import List
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 from tgju_service import tgju_service
+from keyboards import get_prices_view_keyboard
 
 router = Router()
 
-def format_price(toman: int) -> str:
-    return f"{toman:,.0f} تومان"
+def format_price(toman: int | float) -> str:
+    if not toman:
+        return "۰ تومان"
+    return f"{int(round(toman)):,d} تومان"
 
-async def render_live_prices_text() -> str:
+def format_change(change_str: str) -> str:
+    if not change_str:
+        return "-"
+    return change_str.strip()
+
+async def render_live_prices_summary() -> str:
     prices = await tgju_service.get_all_prices()
     gold_data = prices.get('gold', {})
     silver_data = prices.get('silver', {})
     coins_data = prices.get('coins', {})
     currencies_data = prices.get('currencies', {})
     parsian_data = prices.get('parsian', {})
+    macro_data = prices.get('macro', {})
     updated_at = prices.get('updated_at', '')
 
-    lines = ["📈 **تابلوی نرخ‌های لحظه‌ای بازار (منبع: TGJU.org)**\n"]
+    lines = [
+        "📈 **تابلوی نرخ‌های لحظه‌ای بازار (منبع: TGJU.org)**\n",
+        "💡 *برای مشاهده سقف و کف روزانه هر بخش، از دکمه‌های زیر پیام استفاده کنید:*\n"
+    ]
 
     # طلا و آبشده
     lines.append("✨ **طلا و آبشده:**")
@@ -92,25 +105,90 @@ async def render_live_prices_text() -> str:
             if sw in parsian_data:
                 lines.append(f"• پارسیان {parsian_data[sw]['weight']:g} گرم: `{format_price(parsian_data[sw]['toman'])}`")
 
+    # شاخص‌های کلان
+    if macro_data:
+        lines.append("\n🌐 **شاخص‌های بین‌المللی:**")
+        if 'ons_gold' in macro_data:
+            lines.append(f"• انس طلای جهانی: `${macro_data['ons_gold']:,.2f}`")
+        if 'ons_silver' in macro_data:
+            lines.append(f"• انس نقره جهانی: `${macro_data['ons_silver']:,.2f}`")
+        if 'gold_silver_ratio' in macro_data:
+            lines.append(f"• نسبت طلا به نقره (GSR): `{macro_data['gold_silver_ratio']}`")
+
     if updated_at:
         lines.append(f"\n🕒 آخرین بروزرسانی: `{updated_at}`")
+
+    return "\n".join(lines)
+
+def render_category_range_block(category_name: str, items_dict: dict, icon: str = "✨") -> List[str]:
+    lines = [f"\n{icon} **{category_name}:**"]
+    for k, item in items_dict.items():
+        title = item.get('title', k)
+        cur_p = item.get('toman', 0)
+        low_p = item.get('low_toman', cur_p)
+        high_p = item.get('high_toman', cur_p)
+        chg = item.get('change', '')
+        t_str = item.get('time', '')
+        
+        lines.append(
+            f"• **{title}:**\n"
+            f"  💰 نرخ زنده: `{format_price(cur_p)}`\n"
+            f"  📈 بالاترین (سقف روز): `{format_price(high_p)}`\n"
+            f"  📉 پایین‌ترین (کف روز): `{format_price(low_p)}`\n"
+            f"  🔄 نوسان روزانه: `{format_change(chg)}`" + (f" | 🕒 `{t_str}`" if t_str else "")
+        )
+    return lines
+
+async def render_daily_range_view(category: str = "all") -> str:
+    prices = await tgju_service.get_all_prices()
+    gold_data = prices.get('gold', {})
+    silver_data = prices.get('silver', {})
+    coins_data = prices.get('coins', {})
+    currencies_data = prices.get('currencies', {})
+    updated_at = prices.get('updated_at', '')
+
+    lines = ["📊 **گزارش جامع دامنه نوسان و سقف/کف روزانه (منبع: TGJU.org)**\n"]
+
+    if category in ["all", "gold"] and gold_data:
+        lines.extend(render_category_range_block("طلا و آبشده", gold_data, "✨"))
+
+    if category in ["all", "silver"] and silver_data:
+        lines.extend(render_category_range_block("انواع نقره", silver_data, "⚪️"))
+
+    if category in ["all", "coins"] and coins_data:
+        lines.extend(render_category_range_block("مسکوکات طلا (بانکی و قدیم)", coins_data, "🪙"))
+
+    if category in ["all", "currencies"] and currencies_data:
+        lines.extend(render_category_range_block("ارزها و تتر", currencies_data, "💵"))
+
+    if updated_at:
+        lines.append(f"\n🕒 آخرین بروزرسانی مارکت: `{updated_at}`")
 
     return "\n".join(lines)
 
 @router.message(Command("prices"))
 @router.message(F.text == "📈 نرخ‌های لحظه‌ای بازار")
 async def cmd_live_prices(message: Message):
-    text = await render_live_prices_text()
-    await message.answer(text, parse_mode="Markdown")
+    text = await render_live_prices_summary()
+    await message.answer(text, reply_markup=get_prices_view_keyboard("summary"), parse_mode="Markdown")
 
 @router.callback_query(F.data == "btn_live_prices")
-async def cb_live_prices(call: CallbackQuery):
-    await call.answer("در حال استعلام نرخ‌ها...")
-    text = await render_live_prices_text()
-    kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="❌ بستن", callback_data="btn_close_menu")]
-    ])
+@router.callback_query(F.data == "priceview_summary")
+async def cb_live_prices_summary(call: CallbackQuery):
+    await call.answer("در حال دریافت تابلوی نرخ‌ها...")
+    text = await render_live_prices_summary()
     try:
-        await call.message.edit_text(text, reply_markup=kb, parse_mode="Markdown")
+        await call.message.edit_text(text, reply_markup=get_prices_view_keyboard("summary"), parse_mode="Markdown")
     except Exception:
-        await call.message.answer(text, reply_markup=kb, parse_mode="Markdown")
+        await call.message.answer(text, reply_markup=get_prices_view_keyboard("summary"), parse_mode="Markdown")
+
+@router.callback_query(F.data.startswith("priceview_range_"))
+async def cb_price_range_view(call: CallbackQuery):
+    cat = call.data.replace("priceview_range_", "")
+    await call.answer("در حال استخراج سقف و کف روزانه...")
+    text = await render_daily_range_view(cat)
+    try:
+        await call.message.edit_text(text, reply_markup=get_prices_view_keyboard(f"range_{cat}"), parse_mode="Markdown")
+    except Exception:
+        await call.message.answer(text, reply_markup=get_prices_view_keyboard(f"range_{cat}"), parse_mode="Markdown")
+
