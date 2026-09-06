@@ -5,6 +5,7 @@ import sys
 from aiohttp import web
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
+from aiogram.types import BotCommand
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
@@ -25,15 +26,31 @@ logger = logging.getLogger("GoldBot")
 async def health_check(request):
     return web.Response(text="TGJU Gold & Coin Bot is running healthy 🚀", status=200)
 
+async def setup_bot_commands(bot: Bot):
+    """تنظیم لیست دستورات رسمی تلگرام (مطابق تصویر منوی تلگرام)"""
+    commands = [
+        BotCommand(command="home", description="🏠 خانه و منوی اصلی"),
+        BotCommand(command="portfolio", description="💼 دارایی‌های من (پرتفوی)"),
+        BotCommand(command="manage", description="➕ ثبت و ویرایش دارایی"),
+        BotCommand(command="prices", description="📈 نرخ‌های لحظه‌ای بازار"),
+        BotCommand(command="advisor", description="💡 پیشنهاد خرید با بودجه"),
+        BotCommand(command="alerts", description="🔔 هشدارهای قیمت"),
+        BotCommand(command="help", description="ℹ️ راهنمای ربات"),
+    ]
+    try:
+        await bot.set_my_commands(commands)
+        logger.info("✅ Official Telegram Bot Commands set successfully.")
+    except Exception as e:
+        logger.warning(f"Could not set bot commands: {e}")
+
 async def main():
     if not BOT_TOKEN or BOT_TOKEN == "YOUR_TELEGRAM_BOT_TOKEN_HERE":
         logger.error("❌ خطای توکن: متغیر BOT_TOKEN یافت نشد!")
         print("\n" + "="*60)
         print("⚠️ خطا: لطفاً توکن ربات تلگرام خود را در متغیرهای محیطی Render وارد نمایید.")
         print("="*60 + "\n")
-        # برای اینکه وب‌سرور بالا بماند و وضعیت خطا را نمایش دهد
         app = web.Application()
-        app.router.add_get("/", lambda r: web.Response(text="Error: BOT_TOKEN is missing! Please set BOT_TOKEN in Render Environment Variables.", status=400))
+        app.router.add_get("/", lambda r: web.Response(text="Error: BOT_TOKEN is missing!", status=400))
         port = int(os.getenv("PORT", 10000))
         runner = web.AppRunner(app)
         await runner.setup()
@@ -62,6 +79,9 @@ async def main():
     logger.info("🗄 در حال آماده‌سازی پایگاه داده...")
     await db_service.init_db()
 
+    # ثبت منوی رسمی دستورات تلگرام
+    await setup_bot_commands(bot)
+
     scheduler = AlertScheduler(bot)
     scheduler_task = asyncio.create_task(scheduler.start())
 
@@ -70,7 +90,6 @@ async def main():
     app.router.add_get("/", health_check)
     app.router.add_get("/health", health_check)
 
-    # اگر روی سرور رندر با دامنه اختصاصی هستیم از وبهوک استفاده می‌شود که سریع‌تر و پایدارتر است
     if WEBHOOK_URL:
         clean_base = WEBHOOK_URL.rstrip("/")
         if not clean_base.startswith("http"):
@@ -105,7 +124,6 @@ async def main():
             await bot.session.close()
 
     else:
-        # حالت لانگ پولینگ (برای اجرای محلی روی سیستم یا سرورهای معمولی)
         logger.info("📡 حالت Long Polling فعال شد...")
         runner = web.AppRunner(app)
         await runner.setup()

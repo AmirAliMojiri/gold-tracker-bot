@@ -1,5 +1,6 @@
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from database import db_service
 from tgju_service import tgju_service
@@ -8,7 +9,7 @@ from keyboards import (
     get_alerts_menu_keyboard,
     get_alert_items_keyboard,
     get_cancel_keyboard,
-    get_main_reply_keyboard
+    get_main_menu_keyboard
 )
 
 router = Router()
@@ -46,8 +47,8 @@ async def render_alerts_menu(user_id: int) -> tuple[str, InlineKeyboardMarkup]:
     )
     return text, get_alerts_menu_keyboard(daily_en)
 
-@router.message(F.text == "🔔 هشدارهای قیمت")
-async def msg_alerts_menu(message: Message, state: FSMContext):
+@router.message(Command("alerts"))
+async def cmd_alerts_menu(message: Message, state: FSMContext):
     await state.clear()
     text, kb = await render_alerts_menu(message.from_user.id)
     await message.answer(text, reply_markup=kb, parse_mode="Markdown")
@@ -111,7 +112,10 @@ async def cb_bubble_radar(call: CallbackQuery):
     )
 
     kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🔙 بازگشت به بخش هشدارها", callback_data="btn_alerts_menu")]
+        [
+            InlineKeyboardButton(text="🔙 بازگشت به بخش هشدارها", callback_data="btn_alerts_menu"),
+            InlineKeyboardButton(text="❌ بستن", callback_data="btn_close_menu"),
+        ]
     ])
     await call.message.edit_text("\n".join(lines), reply_markup=kb, parse_mode="Markdown")
 
@@ -183,7 +187,7 @@ async def process_alert_target(message: Message, state: FSMContext):
         f"💰 **قیمت فعلی:** `{format_price(curr_p)}`\n\n"
         f"به محض رسیدن بازار به این رقم، ربات در تلگرام به شما پیام هشدار خواهد داد."
     )
-    await message.answer(ans, reply_markup=get_main_reply_keyboard(), parse_mode="Markdown")
+    await message.answer(ans, reply_markup=get_main_menu_keyboard(), parse_mode="Markdown")
 
 @router.callback_query(F.data == "alert_my_list")
 async def cb_my_alerts(call: CallbackQuery):
@@ -192,7 +196,10 @@ async def cb_my_alerts(call: CallbackQuery):
         text = "📋 **شما در حال حاضر هیچ هشدار قیمت فعالی ندارید.**"
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="🎯 ثبت هشدار جدید", callback_data="alert_new_select")],
-            [InlineKeyboardButton(text="🔙 بازگشت", callback_data="btn_alerts_menu")]
+            [
+                InlineKeyboardButton(text="🔙 بازگشت", callback_data="btn_alerts_menu"),
+                InlineKeyboardButton(text="❌ بستن", callback_data="btn_close_menu"),
+            ]
         ])
         await call.message.edit_text(text, reply_markup=kb, parse_mode="Markdown")
         await call.answer()
@@ -207,7 +214,10 @@ async def cb_my_alerts(call: CallbackQuery):
         buttons.append([InlineKeyboardButton(text=btn_text, callback_data=f"delalert_{al['id']}")])
 
     buttons.append([InlineKeyboardButton(text="➕ ثبت هشدار جدید", callback_data="alert_new_select")])
-    buttons.append([InlineKeyboardButton(text="🔙 بازگشت به بخش هشدارها", callback_data="btn_alerts_menu")])
+    buttons.append([
+        InlineKeyboardButton(text="🔙 بازگشت به بخش هشدارها", callback_data="btn_alerts_menu"),
+        InlineKeyboardButton(text="❌ بستن", callback_data="btn_close_menu"),
+    ])
 
     await call.message.edit_text(text, reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons), parse_mode="Markdown")
     await call.answer()

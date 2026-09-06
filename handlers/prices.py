@@ -1,7 +1,8 @@
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.filters import Command
 from tgju_service import tgju_service
-from keyboards import get_main_reply_keyboard
+from keyboards import get_back_to_main_keyboard
 
 router = Router()
 
@@ -97,16 +98,16 @@ async def render_live_prices_text() -> str:
 
     return "\n".join(lines)
 
-@router.message(F.text == "📈 نرخ‌های لحظه‌ای بازار")
-async def msg_live_prices(message: Message):
+@router.message(Command("prices"))
+async def cmd_live_prices(message: Message):
     text = await render_live_prices_text()
-    await message.answer(text, reply_markup=get_main_reply_keyboard(), parse_mode="Markdown")
+    await message.answer(text, reply_markup=get_back_to_main_keyboard(), parse_mode="Markdown")
 
 @router.callback_query(F.data == "btn_live_prices")
 async def cb_live_prices(call: CallbackQuery):
     await call.answer("در حال استعلام نرخ‌ها...")
     text = await render_live_prices_text()
     try:
-        await call.message.edit_text(text, parse_mode="Markdown")
+        await call.message.edit_text(text, reply_markup=get_back_to_main_keyboard(), parse_mode="Markdown")
     except Exception:
-        await call.message.answer(text, reply_markup=get_main_reply_keyboard(), parse_mode="Markdown")
+        await call.message.answer(text, reply_markup=get_back_to_main_keyboard(), parse_mode="Markdown")

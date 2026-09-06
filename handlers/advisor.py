@@ -1,5 +1,6 @@
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from tgju_service import tgju_service
 from advisor import advisor_service
@@ -7,7 +8,7 @@ from states import HoldingStates
 from keyboards import (
     get_quick_budget_keyboard,
     get_cancel_keyboard,
-    get_main_reply_keyboard
+    get_main_menu_keyboard
 )
 
 router = Router()
@@ -50,8 +51,8 @@ async def generate_advisor_response(budget_toman: float) -> str:
 
     return "\n".join(lines)
 
-@router.message(F.text == "💡 پیشنهاد خرید با بودجه")
-async def msg_smart_advisor(message: Message, state: FSMContext):
+@router.message(Command("advisor"))
+async def cmd_smart_advisor(message: Message, state: FSMContext):
     await state.clear()
     prompt = (
         "💡 **مشاور هوشمند تخصیص سرمایه و خرید دارایی:**\n\n"
@@ -95,7 +96,13 @@ async def cb_select_budget(call: CallbackQuery, state: FSMContext):
 
     await call.answer("در حال آنالیز بازار...")
     response_text = await generate_advisor_response(budget)
-    await call.message.answer(response_text, reply_markup=get_main_reply_keyboard(), parse_mode="Markdown")
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="🔙 بازگشت به منوی اصلی", callback_data="btn_main_menu"),
+            InlineKeyboardButton(text="❌ بستن", callback_data="btn_close_menu"),
+        ]
+    ])
+    await call.message.edit_text(response_text, reply_markup=kb, parse_mode="Markdown")
 
 @router.message(HoldingStates.waiting_for_advisor_budget)
 async def process_custom_budget(message: Message, state: FSMContext):
@@ -114,4 +121,10 @@ async def process_custom_budget(message: Message, state: FSMContext):
     await state.clear()
     await message.answer("🔍 در حال تحلیل بهترین دارایی‌ها...")
     response_text = await generate_advisor_response(budget)
-    await message.answer(response_text, reply_markup=get_main_reply_keyboard(), parse_mode="Markdown")
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="🔙 بازگشت به منوی اصلی", callback_data="btn_main_menu"),
+            InlineKeyboardButton(text="❌ بستن", callback_data="btn_close_menu"),
+        ]
+    ])
+    await message.answer(response_text, reply_markup=kb, parse_mode="Markdown")

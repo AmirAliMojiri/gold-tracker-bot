@@ -1,12 +1,13 @@
 import re
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from database import db_service
 from tgju_service import tgju_service
 from states import HoldingStates
 from keyboards import (
-    get_main_reply_keyboard,
+    get_main_menu_keyboard,
     get_categories_keyboard,
     get_gold_items_keyboard,
     get_silver_items_keyboard,
@@ -16,8 +17,7 @@ from keyboards import (
     get_parsian_keyboard,
     get_cancel_keyboard,
     get_skip_buy_price_keyboard,
-    get_clear_confirmation_keyboard,
-    get_back_to_main_keyboard
+    get_clear_confirmation_keyboard
 )
 
 router = Router()
@@ -45,7 +45,6 @@ def format_pl(current_val: float, buy_cost: float) -> str:
     else:
         return "\n  ↳ ⚪️ سربه‌سر (`0.0%`)"
 
-# مشخصات و متادیتای تمام دارایی‌ها
 ITEM_METADATA = {
     # طلا
     'gold_18k': ('طلای ۱۸ عیار', 'گرم', 'gold', '23,000,000'),
@@ -221,7 +220,7 @@ async def render_portfolio_summary(user_id: int) -> str:
     if not items_output:
         return (
             "💼 **سبد دارایی‌های شما در حال حاضر خالی است!**\n\n"
-            "برای ثبت دارایی‌های خود، از منوی پایین روی گزینه «➕ **ثبت / ویرایش دارایی**» کلیک کنید."
+            "برای ثبت دارایی‌های خود، از منوی زیر روی دکمه «➕ **ثبت و ویرایش دارایی**» کلیک فرمایید."
         )
 
     header = "💼 **گزارش لحظه‌ای دارایی‌های من (پرتفوی هوشمند):**\n"
@@ -247,26 +246,38 @@ async def render_portfolio_summary(user_id: int) -> str:
     summary_lines.append(f"🕒 زمان استعلام نرخ TGJU: `{prices.get('updated_at', '')}`")
     return header + "\n" + body + "\n".join(summary_lines)
 
-# نمایش دارایی من (دکمه کیبورد و اینلاین)
-@router.message(F.text == "💼 دارایی‌های من (پرتفوی)")
-async def msg_portfolio_summary(message: Message, state: FSMContext):
+# نمایش دارایی من
+@router.message(Command("portfolio"))
+async def cmd_portfolio(message: Message, state: FSMContext):
     await state.clear()
     msg = await render_portfolio_summary(message.from_user.id)
-    await message.answer(msg, reply_markup=get_main_reply_keyboard(), parse_mode="Markdown")
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="🔙 بازگشت به منوی اصلی", callback_data="btn_main_menu"),
+            InlineKeyboardButton(text="❌ بستن", callback_data="btn_close_menu"),
+        ]
+    ])
+    await message.answer(msg, reply_markup=kb, parse_mode="Markdown")
 
 @router.callback_query(F.data == "btn_portfolio_summary")
 async def cb_portfolio_summary(call: CallbackQuery, state: FSMContext):
     await state.clear()
-    await call.answer("در حال محاسبه ارزش دارایی‌ها...")
+    await call.answer("در حال استخراج ارزش دارایی‌ها...")
     msg = await render_portfolio_summary(call.from_user.id)
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="🔙 بازگشت به منوی اصلی", callback_data="btn_main_menu"),
+            InlineKeyboardButton(text="❌ بستن", callback_data="btn_close_menu"),
+        ]
+    ])
     try:
-        await call.message.edit_text(msg, parse_mode="Markdown")
+        await call.message.edit_text(msg, reply_markup=kb, parse_mode="Markdown")
     except Exception:
-        await call.message.answer(msg, parse_mode="Markdown")
+        await call.message.answer(msg, reply_markup=kb, parse_mode="Markdown")
 
-# مدیریت و ثبت دارایی‌ها
-@router.message(F.text == "➕ ثبت / ویرایش دارایی")
-async def msg_manage_holdings(message: Message, state: FSMContext):
+# ثبت و ویرایش دارایی
+@router.message(Command("manage"))
+async def cmd_manage(message: Message, state: FSMContext):
     await state.clear()
     text = "📁 **دسته‌بندی دارایی مورد نظر برای ثبت یا ویرایش را انتخاب کنید:**"
     await message.answer(text, reply_markup=get_categories_keyboard(), parse_mode="Markdown")
@@ -280,13 +291,6 @@ async def cb_manage_holdings(call: CallbackQuery, state: FSMContext):
     except Exception:
         await call.message.answer(text, reply_markup=get_categories_keyboard(), parse_mode="Markdown")
     await call.answer()
-
-# پاک‌سازی دارایی‌ها
-@router.message(F.text == "🗑 پاک‌سازی سبد")
-async def msg_clear_confirm(message: Message, state: FSMContext):
-    await state.clear()
-    text = "⚠️ **آیا مطمئن هستید که می‌خواهید تمام دارایی‌های ثبت‌شده خود را پاک کنید؟**"
-    await message.answer(text, reply_markup=get_clear_confirmation_keyboard(), parse_mode="Markdown")
 
 @router.callback_query(F.data == "cat_gold")
 async def cb_cat_gold(call: CallbackQuery):
@@ -324,7 +328,6 @@ async def cb_cat_parsian(call: CallbackQuery):
     await call.message.edit_text(text, reply_markup=get_parsian_keyboard(), parse_mode="Markdown")
     await call.answer()
 
-# انتخاب آیتم اصلی
 @router.callback_query(F.data.startswith("item_"))
 async def cb_select_item(call: CallbackQuery, state: FSMContext):
     field_name = call.data.replace("item_", "")
@@ -370,7 +373,7 @@ async def process_main_value(message: Message, state: FSMContext):
         await db_service.update_main_holding(message.from_user.id, field_name, 0.0, 0.0)
         await state.clear()
         ans = f"✅ **{title}** با موفقیت از سبد دارایی شما حذف شد."
-        await message.answer(ans, reply_markup=get_main_reply_keyboard(), parse_mode="Markdown")
+        await message.answer(ans, reply_markup=get_main_menu_keyboard(), parse_mode="Markdown")
         return
 
     await state.update_data(amount=value)
@@ -397,8 +400,7 @@ async def cb_skip_main_buy_price(call: CallbackQuery, state: FSMContext):
     await state.clear()
 
     ans = f"✅ موجودی **{title}** به مقدار `{amount:g} {unit}` (بدون قیمت خرید) ثبت و ذخیره شد."
-    await call.message.edit_text(ans, parse_mode="Markdown")
-    await call.message.answer("از منوی زیر می‌توانید دارایی‌های خود را مشاهده کنید:", reply_markup=get_main_reply_keyboard())
+    await call.message.edit_text(ans, reply_markup=get_main_menu_keyboard(), parse_mode="Markdown")
     await call.answer("دارایی ثبت شد.")
 
 @router.message(HoldingStates.waiting_for_main_buy_price)
@@ -429,7 +431,7 @@ async def process_main_buy_price(message: Message, state: FSMContext):
         f"🔹 مقدار: `{amount:g} {unit}`\n"
         f"🔹 قیمت خرید واحد: `{format_price(buy_price)}`"
     )
-    await message.answer(ans, reply_markup=get_main_reply_keyboard(), parse_mode="Markdown")
+    await message.answer(ans, reply_markup=get_main_menu_keyboard(), parse_mode="Markdown")
 
 # پارسیان
 @router.callback_query(F.data.startswith("parsian_"))
@@ -507,7 +509,7 @@ async def process_parsian_quantity(message: Message, state: FSMContext):
         await db_service.update_parsian_holding(message.from_user.id, weight, 0, 0.0)
         await state.clear()
         ans = f"✅ سکه پارسیان `{weight:g} گرمی` از دارایی‌های شما حذف شد."
-        await message.answer(ans, reply_markup=get_main_reply_keyboard(), parse_mode="Markdown")
+        await message.answer(ans, reply_markup=get_main_menu_keyboard(), parse_mode="Markdown")
         return
 
     await state.update_data(parsian_qty=qty)
@@ -531,8 +533,7 @@ async def cb_skip_parsian_buy_price(call: CallbackQuery, state: FSMContext):
     await state.clear()
 
     ans = f"✅ تعداد `{qty} عدد` سکه پارسیان `{weight:g} گرمی` با موفقیت ذخیره شد."
-    await call.message.edit_text(ans, parse_mode="Markdown")
-    await call.message.answer("از منوی زیر می‌توانید دارایی‌های خود را مشاهده فرمایید:", reply_markup=get_main_reply_keyboard())
+    await call.message.edit_text(ans, reply_markup=get_main_menu_keyboard(), parse_mode="Markdown")
     await call.answer("پارسیان ثبت شد.")
 
 @router.message(HoldingStates.waiting_for_parsian_buy_price)
@@ -561,4 +562,4 @@ async def process_parsian_buy_price(message: Message, state: FSMContext):
         f"🔹 تعداد: `{qty} عدد`\n"
         f"🔹 قیمت خرید واحد: `{format_price(buy_price)}`"
     )
-    await message.answer(ans, reply_markup=get_main_reply_keyboard(), parse_mode="Markdown")
+    await message.answer(ans, reply_markup=get_main_menu_keyboard(), parse_mode="Markdown")
