@@ -7,7 +7,7 @@ from states import HoldingStates
 from keyboards import (
     get_quick_budget_keyboard,
     get_cancel_keyboard,
-    get_back_to_main_keyboard
+    get_main_reply_keyboard
 )
 
 router = Router()
@@ -30,13 +30,13 @@ async def generate_advisor_response(budget_toman: float) -> str:
     lines = [
         f"💡 **تحلیل هوشمند بازار و گزینه‌های بهینه خرید**",
         f"💵 بودجه شما: `{format_price(budget_toman)}`\n",
-        "🎯 **اولویت‌بندی دارایی‌ها بر اساس بازدهی ۳ ماهه، حباب قیمتی و کارمزد:**\n"
+        "🎯 **اولویت‌بندی دارایی‌ها بر اساس بازدهی، حباب قیمتی و کارمزد:**\n"
     ]
 
     for idx, rec in enumerate(recommendations, 1):
         lines.append(
             f"**{idx}. {rec['title']}** ({rec['category']})\n"
-            f"  🔹 مقدار قابل خرید با بودجه شما: `{rec['affordable_qty']}`\n"
+            f"  🔹 مقدار قابل خرید: `{rec['affordable_qty']}`\n"
             f"  🔹 نرخ هر واحد: `{format_price(rec['unit_price'])}`\n"
             f"  🔹 سطح ریسک: `{rec['risk']}`\n"
             f"  📋 **دلیل اولویت:**\n{rec['reason']}\n"
@@ -45,18 +45,27 @@ async def generate_advisor_response(budget_toman: float) -> str:
     lines.append(
         "━━━━━━━━━━━━━━━━━━━━\n"
         "🔍 **جمع‌بندی تحلیلی برای بازه ۳ تا ۶ ماهه:**\n"
-        "• برای بودجه‌های خرد (زیر ۱۵ میلیون تومان)، **نقره ۹۹۹** به دلیل پتانسیل جهش دلاری-انسی و **سکه‌های پارسیان/صندوق‌های طلا** به دلیل حذف حباب سکه، بهترین ارزش خرید را نسبت به ارز یا سکه ربع/نیم دارند."
+        "• برای بودجه‌های خرد، **نقره ۹۹۹** و **سکه‌های پارسیان/صندوق‌های طلا** به دلیل حذف حباب سکه، بهترین ارزش خرید را دارند."
     )
 
     return "\n".join(lines)
+
+@router.message(F.text == "💡 پیشنهاد خرید با بودجه")
+async def msg_smart_advisor(message: Message, state: FSMContext):
+    await state.clear()
+    prompt = (
+        "💡 **مشاور هوشمند تخصیص سرمایه و خرید دارایی:**\n\n"
+        "این سیستم بر اساس **روند قیمتی گذشته**، **میزان حباب**، **کارمزدها** و **نرخ‌های زنده TGJU** بهترین گزینه‌ها را متناسب با بودجه شما پیشنهاد می‌دهد.\n\n"
+        "لطفاً مبلغ سرمایه خود را انتخاب یا ارسال فرمایید:"
+    )
+    await message.answer(prompt, reply_markup=get_quick_budget_keyboard(), parse_mode="Markdown")
 
 @router.callback_query(F.data == "btn_smart_advisor")
 async def cb_smart_advisor(call: CallbackQuery, state: FSMContext):
     await state.clear()
     prompt = (
         "💡 **مشاور هوشمند تخصیص سرمایه و خرید دارایی:**\n\n"
-        "این سیستم بر اساس **روند قیمتی ۳ ماهه گذشته**، **میزان حباب**، **کارمزدها** و **نرخ‌های زنده TGJU** بهترین گزینه‌های خرید را متناسب با بودجه شما اولویت‌بندی می‌کند.\n\n"
-        "لطفاً مبلغ سرمایه در دسترس خود را انتخاب کنید یا مبلغ دلخواه را وارد فرمایید:"
+        "لطفاً مبلغ سرمایه در دسترس خود را انتخاب یا ارسال نمایید:"
     )
     try:
         await call.message.edit_text(prompt, reply_markup=get_quick_budget_keyboard(), parse_mode="Markdown")
@@ -84,9 +93,9 @@ async def cb_select_budget(call: CallbackQuery, state: FSMContext):
         await call.answer("مبلغ نامعتبر است.")
         return
 
-    await call.answer("در حال آنالیز بازار و استخراج بهترین گزینه‌ها...")
+    await call.answer("در حال آنالیز بازار...")
     response_text = await generate_advisor_response(budget)
-    await call.message.edit_text(response_text, reply_markup=get_back_to_main_keyboard(), parse_mode="Markdown")
+    await call.message.answer(response_text, reply_markup=get_main_reply_keyboard(), parse_mode="Markdown")
 
 @router.message(HoldingStates.waiting_for_advisor_budget)
 async def process_custom_budget(message: Message, state: FSMContext):
@@ -103,6 +112,6 @@ async def process_custom_budget(message: Message, state: FSMContext):
         return
 
     await state.clear()
-    await message.answer("🔍 در حال تحلیل بهترین دارایی‌ها بر اساس بودجه شما...")
+    await message.answer("🔍 در حال تحلیل بهترین دارایی‌ها...")
     response_text = await generate_advisor_response(budget)
-    await message.answer(response_text, reply_markup=get_back_to_main_keyboard(), parse_mode="Markdown")
+    await message.answer(response_text, reply_markup=get_main_reply_keyboard(), parse_mode="Markdown")

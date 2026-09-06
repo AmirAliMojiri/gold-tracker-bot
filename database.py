@@ -11,14 +11,16 @@ ALL_MAIN_FIELDS = [
     # نقره
     'silver_999', 'silver_999_buy',
     'silver_925', 'silver_925_buy',
-    # سکه‌ها
+    # سکه‌های بانکی
     'coin_emami', 'coin_emami_buy',
     'coin_bahar', 'coin_bahar_buy',
     'coin_half_new', 'coin_half_new_buy',
-    'coin_half_old', 'coin_half_old_buy',
     'coin_rob_new', 'coin_rob_new_buy',
-    'coin_rob_old', 'coin_rob_old_buy',
     'coin_grami', 'coin_grami_buy',
+    # سکه‌های طرح قدیم (قبل ۸۶)
+    'coin_emami_old', 'coin_emami_old_buy',
+    'coin_half_old', 'coin_half_old_buy',
+    'coin_rob_old', 'coin_rob_old_buy',
     # ارزها
     'currency_usd', 'currency_usd_buy',
     'currency_usdt', 'currency_usdt_buy',
@@ -80,14 +82,14 @@ class Database:
                     item_key TEXT,
                     item_title TEXT,
                     target_price REAL,
-                    direction TEXT, -- 'above' or 'below'
+                    direction TEXT,
                     is_active INTEGER DEFAULT 1,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY(user_id) REFERENCES users(user_id)
                 )
             """)
 
-            # جدول تنظیمات کاربر (گزارش روزانه، رادار حباب)
+            # جدول تنظیمات کاربر
             await db.execute("""
                 CREATE TABLE IF NOT EXISTS user_settings (
                     user_id INTEGER PRIMARY KEY,
@@ -196,7 +198,7 @@ class Database:
             await db.execute("DELETE FROM parsian_holdings WHERE user_id = ?", (user_id,))
             await db.commit()
 
-    # --- مدیریت هشدارها (Alerts) ---
+    # --- مدیریت هشدارها ---
     async def add_price_alert(self, user_id: int, item_key: str, item_title: str, target_price: float, direction: str) -> int:
         async with aiosqlite.connect(self.db_path) as db:
             cursor = await db.execute("""
@@ -230,7 +232,7 @@ class Database:
             await db.execute("DELETE FROM price_alerts WHERE id = ? AND user_id = ?", (alert_id, user_id))
             await db.commit()
 
-    # --- تنظیمات کاربر (Settings) ---
+    # --- تنظیمات کاربر ---
     async def get_user_settings(self, user_id: int) -> Dict[str, Any]:
         async with aiosqlite.connect(self.db_path) as db:
             db.row_factory = aiosqlite.Row
@@ -257,12 +259,6 @@ class Database:
     async def get_all_digest_users(self) -> List[int]:
         async with aiosqlite.connect(self.db_path) as db:
             async with db.execute("SELECT user_id FROM user_settings WHERE daily_digest = 1") as cursor:
-                rows = await cursor.fetchall()
-                return [r[0] for r in rows]
-
-    async def get_all_bubble_users(self) -> List[int]:
-        async with aiosqlite.connect(self.db_path) as db:
-            async with db.execute("SELECT user_id FROM user_settings WHERE bubble_alert = 1") as cursor:
                 rows = await cursor.fetchall()
                 return [r[0] for r in rows]
 

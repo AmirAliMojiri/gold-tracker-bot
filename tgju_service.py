@@ -10,7 +10,7 @@ class TGJUService:
     """
     سرویس دریافت و کش قیمت‌های زنده طلا، سکه، نقره، ارزها و حباب از سایت TGJU.org
     """
-    CACHE_DURATION = 120  # مدت زمان کش: ۲ دقیقه (بر حسب ثانیه)
+    CACHE_DURATION = 120  # ۲ دقیقه کش
 
     HEADERS = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
@@ -47,12 +47,14 @@ class TGJUService:
         'sekeb': ('سکه بهار آزادی', 'coin_bahar_alt'),
         'retail_nim': ('نیم سکه (طرح جدید)', 'coin_half_new'),
         'nim': ('نیم سکه', 'coin_half_new_alt'),
-        'nim_down': ('نیم سکه (طرح قدیم / قبل ۸۶)', 'coin_half_old'),
         'retail_rob': ('ربع سکه (طرح جدید)', 'coin_rob_new'),
         'rob': ('ربع سکه', 'coin_rob_new_alt'),
-        'rob_down': ('ربع سکه (طرح قدیم / قبل ۸۶)', 'coin_rob_old'),
         'retail_gerami': ('سکه گرمی', 'coin_grami'),
         'gerami': ('سکه گرمی', 'coin_grami_alt'),
+        # سکه‌های طرح قدیم (قبل ۸۶)
+        'sekee_down': ('تمام سکه طرح قدیم (قبل ۸۶)', 'coin_emami_old'),
+        'nim_down': ('نیم سکه طرح قدیم (قبل ۸۶)', 'coin_half_old'),
+        'rob_down': ('ربع سکه طرح قدیم (قبل ۸۶)', 'coin_rob_old'),
     }
 
     BUBBLE_KEYS = {
@@ -136,7 +138,7 @@ class TGJUService:
                 'updated_at': time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
             }
 
-            # ۱. طلا و نقره
+            # طلا و نقره
             if gold_html:
                 try:
                     tree = html.fromstring(gold_html)
@@ -165,7 +167,7 @@ class TGJUService:
                 except Exception as e:
                     print(f"Error parsing gold HTML: {e}")
 
-            # ۲. سکه‌ها و حباب‌ها
+            # سکه‌ها و حباب‌ها
             if coin_html:
                 try:
                     tree = html.fromstring(coin_html)
@@ -181,7 +183,7 @@ class TGJUService:
                                 target_key = internal_key.replace('_alt', '')
                                 if target_key not in prices_data['coins'] or not internal_key.endswith('_alt'):
                                     prices_data['coins'][target_key] = {
-                                        'title': title.replace(' (طرح جدید)', '').replace(' (طرح قدیم)', ''),
+                                        'title': title.replace(' (طرح جدید)', ''),
                                         'toman': toman_val,
                                         'rial': rial_val,
                                     }
@@ -195,22 +197,21 @@ class TGJUService:
                 except Exception as e:
                     print(f"Error parsing coin HTML: {e}")
 
-            # محاسبه درصدی حباب سکه‌ها
-            for coin_k, bub_k, base_k in [
-                ('coin_emami', 'bubble_emami', 'emami_pct'),
-                ('coin_bahar', 'bubble_bahar', 'bahar_pct'),
-                ('coin_half_new', 'bubble_nim', 'nim_pct'),
-                ('coin_rob_new', 'bubble_rob', 'rob_pct'),
-                ('coin_grami', 'bubble_grami', 'grami_pct'),
+            # محاسبه درصدی حباب‌ها
+            for coin_k, bub_k in [
+                ('coin_emami', 'bubble_emami'),
+                ('coin_bahar', 'bubble_bahar'),
+                ('coin_half_new', 'bubble_nim'),
+                ('coin_rob_new', 'bubble_rob'),
+                ('coin_grami', 'bubble_grami'),
             ]:
                 if coin_k in prices_data['coins'] and bub_k in prices_data['bubbles']:
                     c_price = prices_data['coins'][coin_k]['toman']
                     b_val = prices_data['bubbles'][bub_k]['toman']
                     if c_price > 0:
-                        pct = (b_val / c_price) * 100
-                        prices_data['bubbles'][bub_k]['percentage'] = round(pct, 1)
+                        prices_data['bubbles'][bub_k]['percentage'] = round((b_val / c_price) * 100, 1)
 
-            # ۳. ارزها
+            # ارزها
             for raw_html in [currency_html, home_html]:
                 if not raw_html:
                     continue
@@ -235,7 +236,7 @@ class TGJUService:
                 except Exception as e:
                     print(f"Error parsing currency HTML: {e}")
 
-            # ۴. پارسیان
+            # پارسیان
             if parsian_html:
                 try:
                     tree = html.fromstring(parsian_html)

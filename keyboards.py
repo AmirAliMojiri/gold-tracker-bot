@@ -1,96 +1,34 @@
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import (
+    ReplyKeyboardMarkup,
+    KeyboardButton,
+    InlineKeyboardMarkup,
+    InlineKeyboardButton
+)
 
-def get_main_menu_keyboard() -> InlineKeyboardMarkup:
-    """منوی اصلی شیشه‌ای و طبقه‌بندی شده ربات"""
+def get_main_reply_keyboard() -> ReplyKeyboardMarkup:
+    """منوی کیبورد اصلی و همیشگی تلگرام در پایین صفحه"""
     keyboard = [
         [
-            InlineKeyboardButton(text="📊 ارزش سبد و سود/زیان من", callback_data="btn_portfolio_summary"),
+            KeyboardButton(text="💼 دارایی‌های من (پرتفوی)"),
+            KeyboardButton(text="➕ ثبت / ویرایش دارایی"),
         ],
         [
-            InlineKeyboardButton(text="🔔 هشدارهای هوشمند", callback_data="btn_alerts_menu"),
-            InlineKeyboardButton(text="🧮 ابزارها و محاسبات", callback_data="btn_tools_menu"),
+            KeyboardButton(text="📈 نرخ‌های لحظه‌ای بازار"),
+            KeyboardButton(text="💡 پیشنهاد خرید با بودجه"),
         ],
         [
-            InlineKeyboardButton(text="💡 پیشنهاد خرید بر اساس بودجه", callback_data="btn_smart_advisor"),
-            InlineKeyboardButton(text="➕ ثبت / ویرایش دارایی", callback_data="btn_manage_holdings"),
-        ],
-        [
-            InlineKeyboardButton(text="📈 نرخ‌های لحظه‌ای بازار", callback_data="btn_live_prices"),
-            InlineKeyboardButton(text="🗑 پاک‌سازی سبد", callback_data="btn_clear_confirm"),
-        ],
-        [
-            InlineKeyboardButton(text="ℹ️ راهنما", callback_data="btn_help"),
+            KeyboardButton(text="🔔 هشدارهای قیمت"),
+            KeyboardButton(text="🗑 پاک‌سازی سبد"),
         ]
     ]
-    return InlineKeyboardMarkup(inline_keyboard=keyboard)
+    return ReplyKeyboardMarkup(
+        keyboard=keyboard,
+        resize_keyboard=True,
+        is_persistent=True,
+        input_field_placeholder="یکی از گزینه‌های منو را انتخاب کنید..."
+    )
 
-# --- منوی هشدارهای هوشمند ---
-def get_alerts_menu_keyboard(daily_enabled: bool = True, bubble_enabled: bool = True) -> InlineKeyboardMarkup:
-    digest_text = "🕒 گزارش شبانه: فعال ✅" if daily_enabled else "🕒 گزارش شبانه: غیرفعال ❌"
-    keyboard = [
-        [
-            InlineKeyboardButton(text="🎯 ثبت هشدار قیمت جدید", callback_data="alert_new_select"),
-            InlineKeyboardButton(text="📋 هشدارهای فعال من", callback_data="alert_my_list"),
-        ],
-        [
-            InlineKeyboardButton(text="🎈 رادار و تحلیل حباب سکه", callback_data="alert_bubble_radar"),
-        ],
-        [
-            InlineKeyboardButton(text=digest_text, callback_data="toggle_daily_digest"),
-        ],
-        [
-            InlineKeyboardButton(text="🔙 بازگشت به منوی اصلی", callback_data="btn_main_menu"),
-        ]
-    ]
-    return InlineKeyboardMarkup(inline_keyboard=keyboard)
-
-def get_alert_items_keyboard() -> InlineKeyboardMarkup:
-    """انتخاب دارایی جهت تنظیم هشدار قیمت"""
-    keyboard = [
-        [
-            InlineKeyboardButton(text="طلای ۱۸ عیار", callback_data="setalert_gold_18k"),
-            InlineKeyboardButton(text="طلای آب‌شده", callback_data="setalert_gold_melted"),
-        ],
-        [
-            InlineKeyboardButton(text="سکه امامی", callback_data="setalert_coin_emami"),
-            InlineKeyboardButton(text="تمام بهار آزادی", callback_data="setalert_coin_bahar"),
-        ],
-        [
-            InlineKeyboardButton(text="نیم سکه", callback_data="setalert_coin_half_new"),
-            InlineKeyboardButton(text="ربع سکه", callback_data="setalert_coin_rob_new"),
-        ],
-        [
-            InlineKeyboardButton(text="دلار آمریکا", callback_data="setalert_currency_usd"),
-            InlineKeyboardButton(text="تتر (USDT)", callback_data="setalert_currency_usdt"),
-        ],
-        [
-            InlineKeyboardButton(text="گرم نقره ۹۹۹", callback_data="setalert_silver_999"),
-        ],
-        [
-            InlineKeyboardButton(text="🔙 بازگشت", callback_data="btn_alerts_menu"),
-        ]
-    ]
-    return InlineKeyboardMarkup(inline_keyboard=keyboard)
-
-# --- منوی ابزارها و ماشین‌حساب‌ها ---
-def get_tools_menu_keyboard() -> InlineKeyboardMarkup:
-    keyboard = [
-        [
-            InlineKeyboardButton(text="📊 نمودار تصویری سبد دارایی (Pie Chart)", callback_data="tool_pie_chart"),
-        ],
-        [
-            InlineKeyboardButton(text="🔄 تبدیل دارایی‌ها به یکدیگر (Swapper)", callback_data="tool_swapper"),
-        ],
-        [
-            InlineKeyboardButton(text="📈 ماشین‌حساب خرید پله‌ای و میانگین‌گیری (DCA)", callback_data="tool_dca"),
-        ],
-        [
-            InlineKeyboardButton(text="🔙 بازگشت به منوی اصلی", callback_data="btn_main_menu"),
-        ]
-    ]
-    return InlineKeyboardMarkup(inline_keyboard=keyboard)
-
-# --- دسته‌بندی‌های دارایی ---
+# --- دسته‌بندی‌های دارایی جهت ثبت ---
 def get_categories_keyboard() -> InlineKeyboardMarkup:
     keyboard = [
         [
@@ -110,44 +48,45 @@ def get_categories_keyboard() -> InlineKeyboardMarkup:
             InlineKeyboardButton(text="💵 ارزها و تتر (دلار، یورو و...)", callback_data="cat_currency"),
         ],
         [
-            InlineKeyboardButton(text="🔙 بازگشت به منوی اصلی", callback_data="btn_main_menu"),
+            InlineKeyboardButton(text="🔙 بازگشت به منو", callback_data="btn_main_menu"),
         ]
     ]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
 def get_gold_items_keyboard() -> InlineKeyboardMarkup:
     keyboard = [
-        [InlineKeyboardButton(text="طلای ۱۸ عیار (گرم)", callback_data="item_gold_18k")],
-        [InlineKeyboardButton(text="طلای ۲۴ عیار (گرم)", callback_data="item_gold_24k")],
-        [InlineKeyboardButton(text="طلای دست دوم / کم‌اجرت (گرم)", callback_data="item_gold_used")],
-        [InlineKeyboardButton(text="طلای آب‌شده (گرم)", callback_data="item_gold_melted")],
+        [InlineKeyboardButton(text="✨ طلای ۱۸ عیار (گرم)", callback_data="item_gold_18k")],
+        [InlineKeyboardButton(text="✨ طلای ۲۴ عیار (گرم)", callback_data="item_gold_24k")],
+        [InlineKeyboardButton(text="✨ طلای دست دوم / کم‌اجرت (گرم)", callback_data="item_gold_used")],
+        [InlineKeyboardButton(text="✨ طلای آب‌شده (گرم)", callback_data="item_gold_melted")],
         [InlineKeyboardButton(text="🔙 بازگشت به دسته‌ها", callback_data="btn_manage_holdings")],
     ]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
 def get_silver_items_keyboard() -> InlineKeyboardMarkup:
     keyboard = [
-        [InlineKeyboardButton(text="گرم نقره ۹۹۹ (خالص/شمش/ساچمه)", callback_data="item_silver_999")],
-        [InlineKeyboardButton(text="گرم نقره ۹۲۵ (عیار استرلینگ)", callback_data="item_silver_925")],
+        [InlineKeyboardButton(text="⚪️ گرم نقره ۹۹۹ (خالص/شمش/ساچمه)", callback_data="item_silver_999")],
+        [InlineKeyboardButton(text="⚪️ گرم نقره ۹۲۵ (عیار استرلینگ)", callback_data="item_silver_925")],
         [InlineKeyboardButton(text="🔙 بازگشت به دسته‌ها", callback_data="btn_manage_holdings")],
     ]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
 def get_new_coins_keyboard() -> InlineKeyboardMarkup:
     keyboard = [
-        [InlineKeyboardButton(text="سکه تمام امامی (طرح جدید)", callback_data="item_coin_emami")],
-        [InlineKeyboardButton(text="سکه تمام بهار آزادی", callback_data="item_coin_bahar")],
-        [InlineKeyboardButton(text="نیم سکه (طرح جدید / بعد ۸۶)", callback_data="item_coin_half_new")],
-        [InlineKeyboardButton(text="ربع سکه (طرح جدید / بعد ۸۶)", callback_data="item_coin_rob_new")],
-        [InlineKeyboardButton(text="سکه گرمی (بانکی)", callback_data="item_coin_grami")],
+        [InlineKeyboardButton(text="🪙 سکه تمام امامی (طرح جدید)", callback_data="item_coin_emami")],
+        [InlineKeyboardButton(text="🪙 سکه تمام بهار آزادی", callback_data="item_coin_bahar")],
+        [InlineKeyboardButton(text="🪙 نیم سکه (طرح جدید / بعد ۸۶)", callback_data="item_coin_half_new")],
+        [InlineKeyboardButton(text="🪙 ربع سکه (طرح جدید / بعد ۸۶)", callback_data="item_coin_rob_new")],
+        [InlineKeyboardButton(text="🪙 سکه گرمی (بانکی)", callback_data="item_coin_grami")],
         [InlineKeyboardButton(text="🔙 بازگشت به دسته‌ها", callback_data="btn_manage_holdings")],
     ]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
 def get_old_coins_keyboard() -> InlineKeyboardMarkup:
     keyboard = [
-        [InlineKeyboardButton(text="نیم سکه طرح قدیم (قبل ۸۶)", callback_data="item_coin_half_old")],
-        [InlineKeyboardButton(text="ربع سکه طرح قدیم (قبل ۸۶)", callback_data="item_coin_rob_old")],
+        [InlineKeyboardButton(text="🏛 تمام سکه طرح قدیم (قبل ۸۶)", callback_data="item_coin_emami_old")],
+        [InlineKeyboardButton(text="🏛 نیم سکه طرح قدیم (قبل ۸۶)", callback_data="item_coin_half_old")],
+        [InlineKeyboardButton(text="🏛 ربع سکه طرح قدیم (قبل ۸۶)", callback_data="item_coin_rob_old")],
         [InlineKeyboardButton(text="🔙 بازگشت به دسته‌ها", callback_data="btn_manage_holdings")],
     ]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
@@ -180,34 +119,81 @@ def get_currency_items_keyboard() -> InlineKeyboardMarkup:
 def get_parsian_keyboard() -> InlineKeyboardMarkup:
     keyboard = [
         [
-            InlineKeyboardButton(text="پارسیان ۱۰۰ سوت (۰.۱ گرم)", callback_data="parsian_0.100"),
-            InlineKeyboardButton(text="پارسیان ۲۰۰ سوت (۰.۲ گرم)", callback_data="parsian_0.200"),
+            InlineKeyboardButton(text="🎖 پارسیان ۱۰۰ سوت (۰.۱ گرم)", callback_data="parsian_0.100"),
+            InlineKeyboardButton(text="🎖 پارسیان ۲۰۰ سوت (۰.۲ گرم)", callback_data="parsian_0.200"),
         ],
         [
-            InlineKeyboardButton(text="پارسیان ۳۰۰ سوت (۰.۳ گرم)", callback_data="parsian_0.300"),
-            InlineKeyboardButton(text="پارسیان ۴۰۰ سوت (۰.۴ گرم)", callback_data="parsian_0.400"),
+            InlineKeyboardButton(text="🎖 پارسیان ۳۰۰ سوت (۰.۳ گرم)", callback_data="parsian_0.300"),
+            InlineKeyboardButton(text="🎖 پارسیان ۴۰۰ سوت (۰.۴ گرم)", callback_data="parsian_0.400"),
         ],
         [
-            InlineKeyboardButton(text="پارسیان ۵۰۰ سوت (نیم گرم)", callback_data="parsian_0.500"),
-            InlineKeyboardButton(text="پارسیان ۶۰۰ سوت (۰.۶ گرم)", callback_data="parsian_0.600"),
+            InlineKeyboardButton(text="🎖 پارسیان ۵۰۰ سوت (نیم گرم)", callback_data="parsian_0.500"),
+            InlineKeyboardButton(text="🎖 پارسیان ۶۰۰ سوت (۰.۶ گرم)", callback_data="parsian_0.600"),
         ],
         [
-            InlineKeyboardButton(text="پارسیان ۷۰۰ سوت (۰.۷ گرم)", callback_data="parsian_0.700"),
-            InlineKeyboardButton(text="پارسیان ۸۰۰ سوت (۰.۸ گرم)", callback_data="parsian_0.800"),
+            InlineKeyboardButton(text="🎖 پارسیان ۷۰۰ سوت (۰.۷ گرم)", callback_data="parsian_0.700"),
+            InlineKeyboardButton(text="🎖 پارسیان ۸۰۰ سوت (۰.۸ گرم)", callback_data="parsian_0.800"),
         ],
         [
-            InlineKeyboardButton(text="پارسیان ۹۰۰ سوت (۰.۹ گرم)", callback_data="parsian_0.900"),
-            InlineKeyboardButton(text="پارسیان ۱ گرمی", callback_data="parsian_1.000"),
+            InlineKeyboardButton(text="🎖 پارسیان ۹۰۰ سوت (۰.۹ گرم)", callback_data="parsian_0.900"),
+            InlineKeyboardButton(text="🎖 پارسیان ۱ گرمی", callback_data="parsian_1.000"),
         ],
         [
-            InlineKeyboardButton(text="پارسیان ۱.۲ گرمی", callback_data="parsian_1.200"),
-            InlineKeyboardButton(text="پارسیان ۱.۵ گرمی", callback_data="parsian_1.500"),
+            InlineKeyboardButton(text="🎖 پارسیان ۱.۲ گرمی", callback_data="parsian_1.200"),
+            InlineKeyboardButton(text="🎖 پارسیان ۱.۵ گرمی", callback_data="parsian_1.500"),
         ],
         [
             InlineKeyboardButton(text="✏️ ثبت پارسیان با وزن دلخواه", callback_data="parsian_custom"),
         ],
         [
             InlineKeyboardButton(text="🔙 بازگشت به دسته‌ها", callback_data="btn_manage_holdings")],
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+# --- منوی هشدارهای هوشمند ---
+def get_alerts_menu_keyboard(daily_en: bool = True) -> InlineKeyboardMarkup:
+    digest_text = "🕒 گزارش شبانه (ساعت ۲۱): فعال ✅" if daily_en else "🕒 گزارش شبانه (ساعت ۲۱): غیرفعال ❌"
+    keyboard = [
+        [
+            InlineKeyboardButton(text="🎯 ثبت هشدار قیمت جدید", callback_data="alert_new_select"),
+            InlineKeyboardButton(text="📋 هشدارهای فعال من", callback_data="alert_my_list"),
+        ],
+        [
+            InlineKeyboardButton(text="🎈 رادار و تحلیل حباب سکه", callback_data="alert_bubble_radar"),
+        ],
+        [
+            InlineKeyboardButton(text=digest_text, callback_data="toggle_daily_digest"),
+        ],
+        [
+            InlineKeyboardButton(text="🔙 بازگشت به منوی اصلی", callback_data="btn_main_menu"),
+        ]
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+def get_alert_items_keyboard() -> InlineKeyboardMarkup:
+    keyboard = [
+        [
+            InlineKeyboardButton(text="✨ طلای ۱۸ عیار", callback_data="setalert_gold_18k"),
+            InlineKeyboardButton(text="✨ طلای آب‌شده", callback_data="setalert_gold_melted"),
+        ],
+        [
+            InlineKeyboardButton(text="🪙 سکه امامی", callback_data="setalert_coin_emami"),
+            InlineKeyboardButton(text="🪙 تمام بهار آزادی", callback_data="setalert_coin_bahar"),
+        ],
+        [
+            InlineKeyboardButton(text="🪙 نیم سکه", callback_data="setalert_coin_half_new"),
+            InlineKeyboardButton(text="🪙 ربع سکه", callback_data="setalert_coin_rob_new"),
+        ],
+        [
+            InlineKeyboardButton(text="💵 دلار آمریکا", callback_data="setalert_currency_usd"),
+            InlineKeyboardButton(text="🌐 تتر (USDT)", callback_data="setalert_currency_usdt"),
+        ],
+        [
+            InlineKeyboardButton(text="⚪️ گرم نقره ۹۹۹", callback_data="setalert_silver_999"),
+        ],
+        [
+            InlineKeyboardButton(text="🔙 بازگشت", callback_data="btn_alerts_menu"),
+        ]
     ]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
@@ -226,7 +212,7 @@ def get_quick_budget_keyboard() -> InlineKeyboardMarkup:
             InlineKeyboardButton(text="✏️ مبلغ دلخواه دیگر", callback_data="budget_custom"),
         ],
         [
-            InlineKeyboardButton(text="🔙 بازگشت به منوی اصلی", callback_data="btn_main_menu"),
+            InlineKeyboardButton(text="🔙 بازگشت به منو", callback_data="btn_main_menu"),
         ]
     ]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
@@ -255,6 +241,6 @@ def get_clear_confirmation_keyboard() -> InlineKeyboardMarkup:
 
 def get_back_to_main_keyboard() -> InlineKeyboardMarkup:
     keyboard = [
-        [InlineKeyboardButton(text="🔙 بازگشت به منوی اصلی", callback_data="btn_main_menu")]
+        [InlineKeyboardButton(text="🔙 بازگشت به منو", callback_data="btn_main_menu")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)

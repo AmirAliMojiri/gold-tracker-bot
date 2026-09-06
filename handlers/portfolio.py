@@ -6,7 +6,7 @@ from database import db_service
 from tgju_service import tgju_service
 from states import HoldingStates
 from keyboards import (
-    get_main_menu_keyboard,
+    get_main_reply_keyboard,
     get_categories_keyboard,
     get_gold_items_keyboard,
     get_silver_items_keyboard,
@@ -16,13 +16,13 @@ from keyboards import (
     get_parsian_keyboard,
     get_cancel_keyboard,
     get_skip_buy_price_keyboard,
+    get_clear_confirmation_keyboard,
     get_back_to_main_keyboard
 )
 
 router = Router()
 
 def clean_input_number(text: str) -> str:
-    """تبدیل اعداد فارسی و ویرگول به ارقام انگلیسی و ممیز اعشار استاندارد"""
     persian_digits = '۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩'
     english_digits = '01234567890123456789'
     table = str.maketrans(persian_digits, english_digits)
@@ -34,7 +34,6 @@ def format_price(toman: float) -> str:
     return f"{int(round(toman)):,d} تومان"
 
 def format_pl(current_val: float, buy_cost: float) -> str:
-    """فرمت‌بندی سود یا زیان با علامت و درصد"""
     if buy_cost <= 0:
         return ""
     diff = current_val - buy_cost
@@ -56,14 +55,16 @@ ITEM_METADATA = {
     # نقره
     'silver_999': ('گرم نقره ۹۹۹ (خالص)', 'گرم', 'silver', '500,000'),
     'silver_925': ('گرم نقره ۹۲۵ (استرلینگ)', 'گرم', 'silver', '460,000'),
-    # سکه‌ها
+    # سکه‌های بانکی
     'coin_emami': ('سکه تمام امامی (طرح جدید)', 'عدد', 'coin', '230,000,000'),
     'coin_bahar': ('سکه تمام بهار آزادی', 'عدد', 'coin', '225,000,000'),
     'coin_half_new': ('نیم سکه (طرح جدید)', 'عدد', 'coin', '118,000,000'),
-    'coin_half_old': ('نیم سکه (طرح قدیم / قبل ۸۶)', 'عدد', 'coin', '114,000,000'),
     'coin_rob_new': ('ربع سکه (طرح جدید)', 'عدد', 'coin', '64,000,000'),
-    'coin_rob_old': ('ربع سکه (طرح قدیم / قبل ۸۶)', 'عدد', 'coin', '57,000,000'),
     'coin_grami': ('سکه گرمی (بانکی)', 'عدد', 'coin', '35,000,000'),
+    # سکه‌های طرح قدیم (قبل ۸۶)
+    'coin_emami_old': ('تمام سکه طرح قدیم (قبل ۸۶)', 'عدد', 'coin', '230,000,000'),
+    'coin_half_old': ('نیم سکه طرح قدیم (قبل ۸۶)', 'عدد', 'coin', '114,000,000'),
+    'coin_rob_old': ('ربع سکه طرح قدیم (قبل ۸۶)', 'عدد', 'coin', '57,000,000'),
     # ارزها
     'currency_usd': ('دلار آمریکا', 'دلار', 'currency', '220,000'),
     'currency_usdt': ('تتر (USDT)', 'تتر', 'currency', '222,000'),
@@ -76,12 +77,7 @@ ITEM_METADATA = {
     'currency_iqd': ('۱۰۰ دینار عراق', 'دینار', 'currency', '160'),
 }
 
-# ۱. نمایش پرتفوی و محاسبه کل دارایی و سود/زیان
-@router.callback_query(F.data == "btn_portfolio_summary")
-async def cb_portfolio_summary(call: CallbackQuery):
-    await call.answer("در حال محاسبه ارزش دارایی‌ها و سود/زیان با نرخ زنده TGJU...")
-    
-    user_id = call.from_user.id
+async def render_portfolio_summary(user_id: int) -> str:
     holdings_data = await db_service.get_holdings(user_id)
     main_h = holdings_data['main']
     parsian_h = holdings_data['parsian']
@@ -99,7 +95,7 @@ async def cb_portfolio_summary(call: CallbackQuery):
 
     items_output = []
 
-    # الف) محاسبه طلا
+    # طلا
     gold_lines = []
     for field in ['gold_18k', 'gold_24k', 'gold_used', 'gold_melted']:
         amount = main_h.get(field, 0.0)
@@ -121,7 +117,7 @@ async def cb_portfolio_summary(call: CallbackQuery):
     if gold_lines:
         items_output.append("✨ **طلا و آبشده:**\n" + "\n".join(gold_lines))
 
-    # ب) محاسبه نقره
+    # نقره
     silver_lines = []
     for field in ['silver_999', 'silver_925']:
         amount = main_h.get(field, 0.0)
@@ -143,11 +139,11 @@ async def cb_portfolio_summary(call: CallbackQuery):
     if silver_lines:
         items_output.append("⚪️ **انواع نقره:**\n" + "\n".join(silver_lines))
 
-    # ج) محاسبه سکه‌ها
+    # سکه‌های بانکی و قدیم
     coin_lines = []
     coin_fields = [
-        'coin_emami', 'coin_bahar', 'coin_half_new', 'coin_half_old',
-        'coin_rob_new', 'coin_rob_old', 'coin_grami'
+        'coin_emami', 'coin_bahar', 'coin_half_new', 'coin_rob_new', 'coin_grami',
+        'coin_emami_old', 'coin_half_old', 'coin_rob_old'
     ]
     for field in coin_fields:
         qty = main_h.get(field, 0.0)
@@ -167,9 +163,9 @@ async def cb_portfolio_summary(call: CallbackQuery):
             coin_lines.append(line)
 
     if coin_lines:
-        items_output.append("🪙 **سکه‌های بانکی و طرح قدیم:**\n" + "\n".join(coin_lines))
+        items_output.append("🪙 **انواع سکه‌های بانکی و طرح قدیم:**\n" + "\n".join(coin_lines))
 
-    # د) محاسبه ارزها
+    # ارزها
     curr_lines = []
     currency_fields = [
         'currency_usd', 'currency_usdt', 'currency_eur', 'currency_aed',
@@ -195,7 +191,7 @@ async def cb_portfolio_summary(call: CallbackQuery):
     if curr_lines:
         items_output.append("💵 **ارزها و تتر:**\n" + "\n".join(curr_lines))
 
-    # هـ) محاسبه سکه‌های پارسیان
+    # پارسیان
     parsian_lines = []
     for p in parsian_h:
         w = p['weight']
@@ -222,89 +218,113 @@ async def cb_portfolio_summary(call: CallbackQuery):
     if parsian_lines:
         items_output.append("🎖 **سکه‌های پارسیان:**\n" + "\n".join(parsian_lines))
 
-    # ساخت پیام نهایی
     if not items_output:
-        msg = (
-            "📊 **سبد دارایی‌های شما در حال حاضر خالی است!**\n\n"
-            "جهت محاسبه ارزش و سود/زیان، از طریق دکمه «➕ **ثبت و ویرایش دارایی‌ها**» موجودی‌های خود را وارد نمایید."
+        return (
+            "💼 **سبد دارایی‌های شما در حال حاضر خالی است!**\n\n"
+            "برای ثبت دارایی‌های خود، از منوی پایین روی گزینه «➕ **ثبت / ویرایش دارایی**» کلیک کنید."
         )
-    else:
-        header = "📊 **گزارش جامع سبد دارایی و وضعیت سود/زیان (نرخ روز TGJU):**\n"
-        body = "\n\n".join(items_output)
-        
-        summary_lines = [
-            "\n\n━━━━━━━━━━━━━━━━━━━━",
-            "💰 **خلاصه عملکرد سبد شما:**",
-            f"🔹 ارزش روز کل دارایی: `{format_price(total_current_value)}` (`{int(total_current_value * 10):,d} ریال`)"
-        ]
 
-        if has_any_buy_price and total_invested_cost > 0:
-            total_diff = total_current_value - total_invested_cost
-            total_pct = (total_diff / total_invested_cost) * 100
-            summary_lines.append(f"🔹 کل بهای خرید (سرمایه‌گذاری): `{format_price(total_invested_cost)}`")
-            if total_diff > 0:
-                summary_lines.append(f"📈 **مجموع سود خالص:** `+{format_price(total_diff)}` (`+{total_pct:.1f}%` 🟢)")
-            elif total_diff < 0:
-                summary_lines.append(f"📉 **مجموع زیان:** `-{format_price(abs(total_diff))}` (`{total_pct:.1f}%` 🔴)")
-            else:
-                summary_lines.append("⚪️ **وضعیت:** سربه‌سر (`0.0%`)")
+    header = "💼 **گزارش لحظه‌ای دارایی‌های من (پرتفوی هوشمند):**\n"
+    body = "\n\n".join(items_output)
+    
+    summary_lines = [
+        "\n\n━━━━━━━━━━━━━━━━━━━━",
+        "💰 **خلاصه وضعیت کل سرمایه‌گذاری شما:**",
+        f"🔹 **ارزش روز کل دارایی:** `{format_price(total_current_value)}`\n   ↳ `{int(total_current_value * 10):,d} ریال`"
+    ]
 
-        summary_lines.append(f"🕒 زمان استعلام: `{prices.get('updated_at', '')}`")
-        msg = header + "\n" + body + "\n".join(summary_lines)
+    if has_any_buy_price and total_invested_cost > 0:
+        total_diff = total_current_value - total_invested_cost
+        total_pct = (total_diff / total_invested_cost) * 100
+        summary_lines.append(f"🔹 **کل مبلغ خرید (بهای تمام‌شده):** `{format_price(total_invested_cost)}`")
+        if total_diff > 0:
+            summary_lines.append(f"📈 **مجموع سود خالص شما:** `+{format_price(total_diff)}` (`+{total_pct:.1f}%` 🟢)")
+        elif total_diff < 0:
+            summary_lines.append(f"📉 **مجموع زیان شما:** `-{format_price(abs(total_diff))}` (`{total_pct:.1f}%` 🔴)")
+        else:
+            summary_lines.append("⚪️ **وضعیت بازدهی:** سربه‌سر (`0.0%`)")
 
+    summary_lines.append(f"🕒 زمان استعلام نرخ TGJU: `{prices.get('updated_at', '')}`")
+    return header + "\n" + body + "\n".join(summary_lines)
+
+# نمایش دارایی من (دکمه کیبورد و اینلاین)
+@router.message(F.text == "💼 دارایی‌های من (پرتفوی)")
+async def msg_portfolio_summary(message: Message, state: FSMContext):
+    await state.clear()
+    msg = await render_portfolio_summary(message.from_user.id)
+    await message.answer(msg, reply_markup=get_main_reply_keyboard(), parse_mode="Markdown")
+
+@router.callback_query(F.data == "btn_portfolio_summary")
+async def cb_portfolio_summary(call: CallbackQuery, state: FSMContext):
+    await state.clear()
+    await call.answer("در حال محاسبه ارزش دارایی‌ها...")
+    msg = await render_portfolio_summary(call.from_user.id)
     try:
-        await call.message.edit_text(msg, reply_markup=get_main_menu_keyboard(), parse_mode="Markdown")
+        await call.message.edit_text(msg, parse_mode="Markdown")
     except Exception:
-        await call.message.answer(msg, reply_markup=get_main_menu_keyboard(), parse_mode="Markdown")
+        await call.message.answer(msg, parse_mode="Markdown")
 
-# ۲. دسته‌بندی‌ها و ناوبری
+# مدیریت و ثبت دارایی‌ها
+@router.message(F.text == "➕ ثبت / ویرایش دارایی")
+async def msg_manage_holdings(message: Message, state: FSMContext):
+    await state.clear()
+    text = "📁 **دسته‌بندی دارایی مورد نظر برای ثبت یا ویرایش را انتخاب کنید:**"
+    await message.answer(text, reply_markup=get_categories_keyboard(), parse_mode="Markdown")
+
 @router.callback_query(F.data == "btn_manage_holdings")
 async def cb_manage_holdings(call: CallbackQuery, state: FSMContext):
     await state.clear()
-    text = "📁 **لطفاً دسته‌بندی دارایی مورد نظر برای ثبت یا ویرایش را انتخاب کنید:**"
+    text = "📁 **دسته‌بندی دارایی مورد نظر برای ثبت یا ویرایش را انتخاب کنید:**"
     try:
         await call.message.edit_text(text, reply_markup=get_categories_keyboard(), parse_mode="Markdown")
     except Exception:
         await call.message.answer(text, reply_markup=get_categories_keyboard(), parse_mode="Markdown")
     await call.answer()
 
+# پاک‌سازی دارایی‌ها
+@router.message(F.text == "🗑 پاک‌سازی سبد")
+async def msg_clear_confirm(message: Message, state: FSMContext):
+    await state.clear()
+    text = "⚠️ **آیا مطمئن هستید که می‌خواهید تمام دارایی‌های ثبت‌شده خود را پاک کنید؟**"
+    await message.answer(text, reply_markup=get_clear_confirmation_keyboard(), parse_mode="Markdown")
+
 @router.callback_query(F.data == "cat_gold")
 async def cb_cat_gold(call: CallbackQuery):
-    text = "✨ **لطفاً نوع طلا را جهت ثبت یا ویرایش انتخاب کنید:**"
+    text = "✨ **نوع طلا را جهت ثبت یا ویرایش وزن انتخاب کنید:**"
     await call.message.edit_text(text, reply_markup=get_gold_items_keyboard(), parse_mode="Markdown")
     await call.answer()
 
 @router.callback_query(F.data == "cat_silver")
 async def cb_cat_silver(call: CallbackQuery):
-    text = "⚪️ **لطفاً نوع نقره را جهت ثبت یا ویرایش انتخاب کنید:**"
+    text = "⚪️ **نوع نقره را جهت ثبت یا ویرایش انتخاب کنید:**"
     await call.message.edit_text(text, reply_markup=get_silver_items_keyboard(), parse_mode="Markdown")
     await call.answer()
 
 @router.callback_query(F.data == "cat_coins_new")
 async def cb_cat_coins_new(call: CallbackQuery):
-    text = "🪙 **لطفاً نوع سکه بانکی (طرح جدید) را انتخاب کنید:**"
+    text = "🪙 **نوع سکه بانکی (طرح جدید) را انتخاب کنید:**"
     await call.message.edit_text(text, reply_markup=get_new_coins_keyboard(), parse_mode="Markdown")
     await call.answer()
 
 @router.callback_query(F.data == "cat_coins_old")
 async def cb_cat_coins_old(call: CallbackQuery):
-    text = "🏛 **لطفاً نوع سکه طرح قدیم (قبل از سال ۸۶) را انتخاب کنید:**"
+    text = "🏛 **نوع سکه طرح قدیم (قبل از سال ۸۶) را انتخاب کنید:**"
     await call.message.edit_text(text, reply_markup=get_old_coins_keyboard(), parse_mode="Markdown")
     await call.answer()
 
 @router.callback_query(F.data == "cat_currency")
 async def cb_cat_currency(call: CallbackQuery):
-    text = "💵 **لطفاً ارز مورد نظر خود را جهت ثبت یا ویرایش انتخاب کنید:**"
+    text = "💵 **ارز مورد نظر خود را جهت ثبت یا ویرایش انتخاب کنید:**"
     await call.message.edit_text(text, reply_markup=get_currency_items_keyboard(), parse_mode="Markdown")
     await call.answer()
 
 @router.callback_query(F.data == "cat_parsian")
 async def cb_cat_parsian(call: CallbackQuery):
-    text = "🎖 **لطفاً وزن سکه پارسیان را انتخاب نمایید:**"
+    text = "🎖 **وزن سکه پارسیان را انتخاب نمایید:**"
     await call.message.edit_text(text, reply_markup=get_parsian_keyboard(), parse_mode="Markdown")
     await call.answer()
 
-# ۳. مرحله اول ورود دارایی اصلی: انتخاب آیتم و دریافت مقدار
+# انتخاب آیتم اصلی
 @router.callback_query(F.data.startswith("item_"))
 async def cb_select_item(call: CallbackQuery, state: FSMContext):
     field_name = call.data.replace("item_", "")
@@ -346,15 +366,13 @@ async def process_main_value(message: Message, state: FSMContext):
         )
         return
 
-    # اگر کاربر عدد صفر وارد کند، دارایی حذف می‌شود
     if value == 0:
         await db_service.update_main_holding(message.from_user.id, field_name, 0.0, 0.0)
         await state.clear()
         ans = f"✅ **{title}** با موفقیت از سبد دارایی شما حذف شد."
-        await message.answer(ans, reply_markup=get_main_menu_keyboard(), parse_mode="Markdown")
+        await message.answer(ans, reply_markup=get_main_reply_keyboard(), parse_mode="Markdown")
         return
 
-    # ذخیره موقت مقدار و رفتن به مرحله دریافت قیمت خرید
     await state.update_data(amount=value)
     await state.set_state(HoldingStates.waiting_for_main_buy_price)
 
@@ -363,7 +381,7 @@ async def process_main_value(message: Message, state: FSMContext):
         f"موجودی ثبت‌شده: `{value:g} {unit}`\n\n"
         f"لطفاً **میانگین قیمت خرید به ازای هر {unit}** را به **تومان** وارد کنید.\n"
         f"🔹 مثال: `{sample_buy}`\n\n"
-        f"💡 اگر قیمت خرید را به خاطر ندارید یا نیازی به محاسبه سود/زیان این مورد ندارید، دکمه زیر را لمس کنید:"
+        f"💡 در صورت عدم تمایل به محاسبه سود/زیان، دکمه زیر را بزنید:"
     )
     await message.answer(prompt, reply_markup=get_skip_buy_price_keyboard("skip_main_buy_price"), parse_mode="Markdown")
 
@@ -378,8 +396,9 @@ async def cb_skip_main_buy_price(call: CallbackQuery, state: FSMContext):
     await db_service.update_main_holding(call.from_user.id, field_name, amount, 0.0)
     await state.clear()
 
-    ans = f"✅ موجودی **{title}** به مقدار `{amount:g} {unit}` (بدون قیمت خرید) با موفقیت ثبت شد."
-    await call.message.edit_text(ans, reply_markup=get_main_menu_keyboard(), parse_mode="Markdown")
+    ans = f"✅ موجودی **{title}** به مقدار `{amount:g} {unit}` (بدون قیمت خرید) ثبت و ذخیره شد."
+    await call.message.edit_text(ans, parse_mode="Markdown")
+    await call.message.answer("از منوی زیر می‌توانید دارایی‌های خود را مشاهده کنید:", reply_markup=get_main_reply_keyboard())
     await call.answer("دارایی ثبت شد.")
 
 @router.message(HoldingStates.waiting_for_main_buy_price)
@@ -406,13 +425,13 @@ async def process_main_buy_price(message: Message, state: FSMContext):
     await state.clear()
 
     ans = (
-        f"✅ موجودی **{title}** با موفقیت ثبت شد:\n"
+        f"✅ موجودی **{title}** با موفقیت در دیتابیس شما ذخیره شد:\n"
         f"🔹 مقدار: `{amount:g} {unit}`\n"
-        f"🔹 میانگین قیمت خرید: `{format_price(buy_price)}` (به ازای هر {unit})"
+        f"🔹 قیمت خرید واحد: `{format_price(buy_price)}`"
     )
-    await message.answer(ans, reply_markup=get_main_menu_keyboard(), parse_mode="Markdown")
+    await message.answer(ans, reply_markup=get_main_reply_keyboard(), parse_mode="Markdown")
 
-# ۴. فرآیند سکه پارسیان
+# پارسیان
 @router.callback_query(F.data.startswith("parsian_"))
 async def cb_select_parsian(call: CallbackQuery, state: FSMContext):
     val = call.data.replace("parsian_", "")
@@ -420,7 +439,7 @@ async def cb_select_parsian(call: CallbackQuery, state: FSMContext):
     if val == "custom":
         await state.set_state(HoldingStates.waiting_for_parsian_weight)
         prompt = (
-            "⚖️ **ثبت سکه پارسیان با وزن سفارشی:**\n\n"
+            "⚖️ **ثبت سکه پارسیان با وزن دلخواه:**\n\n"
             "لطفاً وزن سکه پارسیان را بر حسب **گرم** ارسال کنید.\n"
             "🔹 مثال: `0.350` یا `1.75`"
         )
@@ -488,7 +507,7 @@ async def process_parsian_quantity(message: Message, state: FSMContext):
         await db_service.update_parsian_holding(message.from_user.id, weight, 0, 0.0)
         await state.clear()
         ans = f"✅ سکه پارسیان `{weight:g} گرمی` از دارایی‌های شما حذف شد."
-        await message.answer(ans, reply_markup=get_main_menu_keyboard(), parse_mode="Markdown")
+        await message.answer(ans, reply_markup=get_main_reply_keyboard(), parse_mode="Markdown")
         return
 
     await state.update_data(parsian_qty=qty)
@@ -511,8 +530,9 @@ async def cb_skip_parsian_buy_price(call: CallbackQuery, state: FSMContext):
     await db_service.update_parsian_holding(call.from_user.id, weight, qty, 0.0)
     await state.clear()
 
-    ans = f"✅ تعداد `{qty} عدد` سکه پارسیان `{weight:g} گرمی` با موفقیت ثبت شد."
-    await call.message.edit_text(ans, reply_markup=get_main_menu_keyboard(), parse_mode="Markdown")
+    ans = f"✅ تعداد `{qty} عدد` سکه پارسیان `{weight:g} گرمی` با موفقیت ذخیره شد."
+    await call.message.edit_text(ans, parse_mode="Markdown")
+    await call.message.answer("از منوی زیر می‌توانید دارایی‌های خود را مشاهده فرمایید:", reply_markup=get_main_reply_keyboard())
     await call.answer("پارسیان ثبت شد.")
 
 @router.message(HoldingStates.waiting_for_parsian_buy_price)
@@ -537,8 +557,8 @@ async def process_parsian_buy_price(message: Message, state: FSMContext):
     await state.clear()
 
     ans = (
-        f"✅ سکه پارسیان `{weight:g} گرمی` با موفقیت ثبت گردید:\n"
+        f"✅ سکه پارسیان `{weight:g} گرمی` با موفقیت ذخیره گردید:\n"
         f"🔹 تعداد: `{qty} عدد`\n"
-        f"🔹 قیمت خرید هر عدد: `{format_price(buy_price)}`"
+        f"🔹 قیمت خرید واحد: `{format_price(buy_price)}`"
     )
-    await message.answer(ans, reply_markup=get_main_menu_keyboard(), parse_mode="Markdown")
+    await message.answer(ans, reply_markup=get_main_reply_keyboard(), parse_mode="Markdown")

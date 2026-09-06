@@ -1,18 +1,14 @@
 from aiogram import Router, F
-from aiogram.types import CallbackQuery
+from aiogram.types import Message, CallbackQuery
 from tgju_service import tgju_service
-from keyboards import get_back_to_main_keyboard
+from keyboards import get_main_reply_keyboard
 
 router = Router()
 
 def format_price(toman: int) -> str:
-    """فرمت‌بندی خوانا برای مبالغ تومانی"""
     return f"{toman:,.0f} تومان"
 
-@router.callback_query(F.data == "btn_live_prices")
-async def cb_live_prices(call: CallbackQuery):
-    await call.answer("در حال دریافت آخرین نرخ‌ها از TGJU...")
-    
+async def render_live_prices_text() -> str:
     prices = await tgju_service.get_all_prices()
     gold_data = prices.get('gold', {})
     silver_data = prices.get('silver', {})
@@ -21,9 +17,9 @@ async def cb_live_prices(call: CallbackQuery):
     parsian_data = prices.get('parsian', {})
     updated_at = prices.get('updated_at', '')
 
-    lines = ["📈 **آخرین نرخ‌های زنده بازار (منبع: TGJU.org)**\n"]
+    lines = ["📈 **تابلوی نرخ‌های لحظه‌ای بازار (منبع: TGJU.org)**\n"]
 
-    # بخش طلا
+    # طلا و آبشده
     lines.append("✨ **طلا و آبشده:**")
     if 'gold_18k' in gold_data:
         lines.append(f"• طلای ۱۸ عیار: `{format_price(gold_data['gold_18k']['toman'])}` (هر گرم)")
@@ -36,7 +32,7 @@ async def cb_live_prices(call: CallbackQuery):
     if 'gold_melted' in gold_data:
         lines.append(f"• طلای آبشده: `{format_price(gold_data['gold_melted']['toman'])}`")
 
-    # بخش نقره
+    # نقره
     if silver_data:
         lines.append("\n⚪️ **انواع نقره:**")
         if 'silver_999' in silver_data:
@@ -44,7 +40,7 @@ async def cb_live_prices(call: CallbackQuery):
         if 'silver_925' in silver_data:
             lines.append(f"• گرم نقره ۹۲۵ (استرلینگ): `{format_price(silver_data['silver_925']['toman'])}`")
 
-    # بخش سکه‌های بانکی
+    # سکه‌های بانکی
     lines.append("\n🪙 **سکه‌های طرح جدید (بانکی):**")
     if 'coin_emami' in coins_data:
         lines.append(f"• سکه امامی (طرح جدید): `{format_price(coins_data['coin_emami']['toman'])}`")
@@ -57,14 +53,16 @@ async def cb_live_prices(call: CallbackQuery):
     if 'coin_grami' in coins_data:
         lines.append(f"• سکه گرمی: `{format_price(coins_data['coin_grami']['toman'])}`")
 
-    # بخش سکه‌های طرح قدیم
+    # سکه‌های طرح قدیم
     lines.append("\n🏛 **سکه‌های طرح قدیم (قبل ۸۶):**")
+    if 'coin_emami_old' in coins_data:
+        lines.append(f"• تمام سکه طرح قدیم: `{format_price(coins_data['coin_emami_old']['toman'])}`")
     if 'coin_half_old' in coins_data:
         lines.append(f"• نیم سکه طرح قدیم: `{format_price(coins_data['coin_half_old']['toman'])}`")
     if 'coin_rob_old' in coins_data:
         lines.append(f"• ربع سکه طرح قدیم: `{format_price(coins_data['coin_rob_old']['toman'])}`")
 
-    # بخش ارزها و تتر
+    # ارزها و تتر
     if currencies_data:
         lines.append("\n💵 **ارزها و تتر:**")
         if 'currency_usd' in currencies_data:
@@ -86,7 +84,7 @@ async def cb_live_prices(call: CallbackQuery):
         if 'currency_iqd' in currencies_data:
             lines.append(f"• ۱۰۰ دینار عراق: `{format_price(currencies_data['currency_iqd']['toman'])}`")
 
-    # نمونه سکه‌های پارسیان
+    # پارسیان
     if parsian_data:
         lines.append("\n🎖 **گزیده‌ای از سکه‌های پارسیان:**")
         sample_weights = ["0.100", "0.200", "0.500", "1.000", "1.500"]
@@ -97,8 +95,18 @@ async def cb_live_prices(call: CallbackQuery):
     if updated_at:
         lines.append(f"\n🕒 آخرین بروزرسانی: `{updated_at}`")
 
-    response_text = "\n".join(lines)
+    return "\n".join(lines)
+
+@router.message(F.text == "📈 نرخ‌های لحظه‌ای بازار")
+async def msg_live_prices(message: Message):
+    text = await render_live_prices_text()
+    await message.answer(text, reply_markup=get_main_reply_keyboard(), parse_mode="Markdown")
+
+@router.callback_query(F.data == "btn_live_prices")
+async def cb_live_prices(call: CallbackQuery):
+    await call.answer("در حال استعلام نرخ‌ها...")
+    text = await render_live_prices_text()
     try:
-        await call.message.edit_text(response_text, reply_markup=get_back_to_main_keyboard(), parse_mode="Markdown")
+        await call.message.edit_text(text, parse_mode="Markdown")
     except Exception:
-        await call.message.answer(response_text, reply_markup=get_back_to_main_keyboard(), parse_mode="Markdown")
+        await call.message.answer(text, reply_markup=get_main_reply_keyboard(), parse_mode="Markdown")

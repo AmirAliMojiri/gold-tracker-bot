@@ -8,7 +8,7 @@ from keyboards import (
     get_alerts_menu_keyboard,
     get_alert_items_keyboard,
     get_cancel_keyboard,
-    get_back_to_main_keyboard
+    get_main_reply_keyboard
 )
 
 router = Router()
@@ -36,52 +36,52 @@ ALERT_ITEM_NAMES = {
     'silver_999': 'گرم نقره ۹۹۹',
 }
 
-# ۱. منوی اصلی هشدارها
-@router.callback_query(F.data == "btn_alerts_menu")
-async def cb_alerts_menu(call: CallbackQuery, state: FSMContext):
-    await state.clear()
-    settings = await db_service.get_user_settings(call.from_user.id)
+async def render_alerts_menu(user_id: int) -> tuple[str, InlineKeyboardMarkup]:
+    settings = await db_service.get_user_settings(user_id)
     daily_en = bool(settings.get('daily_digest', 1))
-    bubble_en = bool(settings.get('bubble_alert', 1))
 
     text = (
         "🔔 **مرکز مدیریت هشدارهای هوشمند و اطلاع‌رسانی:**\n\n"
-        "در این بخش می‌توانید تارگت‌های قیمتی برای خرید و فروش تنظیم کنید، وضعیت حباب سکه‌ها را رصد کرده و گزارش‌های خودکار روزانه را مدیریت نمایید."
+        "در این بخش می‌توانید تارگت‌های قیمتی برای خرید و فروش تنظیم کنید، وضعیت حباب سکه‌ها را رصد کرده و گزارش‌های خودکار شبانه را مدیریت نمایید."
     )
+    return text, get_alerts_menu_keyboard(daily_en)
+
+@router.message(F.text == "🔔 هشدارهای قیمت")
+async def msg_alerts_menu(message: Message, state: FSMContext):
+    await state.clear()
+    text, kb = await render_alerts_menu(message.from_user.id)
+    await message.answer(text, reply_markup=kb, parse_mode="Markdown")
+
+@router.callback_query(F.data == "btn_alerts_menu")
+async def cb_alerts_menu(call: CallbackQuery, state: FSMContext):
+    await state.clear()
+    text, kb = await render_alerts_menu(call.from_user.id)
     try:
-        await call.message.edit_text(text, reply_markup=get_alerts_menu_keyboard(daily_en, bubble_en), parse_mode="Markdown")
+        await call.message.edit_text(text, reply_markup=kb, parse_mode="Markdown")
     except Exception:
-        await call.message.answer(text, reply_markup=get_alerts_menu_keyboard(daily_en, bubble_en), parse_mode="Markdown")
+        await call.message.answer(text, reply_markup=kb, parse_mode="Markdown")
     await call.answer()
 
-# ۲. روشن/خاموش کردن گزارش شبانه (Daily Digest)
 @router.callback_query(F.data == "toggle_daily_digest")
 async def cb_toggle_daily_digest(call: CallbackQuery):
     new_val = await db_service.toggle_setting(call.from_user.id, 'daily_digest')
-    settings = await db_service.get_user_settings(call.from_user.id)
     daily_en = bool(new_val)
-    bubble_en = bool(settings.get('bubble_alert', 1))
-
     status_str = "فعال شد ✅" if daily_en else "غیرفعال شد ❌"
     await call.answer(f"گزارش شبانه (ساعت ۲۱:۰۰) {status_str}")
 
-    text = (
-        f"🔔 **مرکز مدیریت هشدارهای هوشمند:**\n\n"
-        f"وضعیت گزارش شبانگاهی (ساعت ۲۱:۰۰): **{status_str}**"
-    )
-    await call.message.edit_text(text, reply_markup=get_alerts_menu_keyboard(daily_en, bubble_en), parse_mode="Markdown")
+    text, kb = await render_alerts_menu(call.from_user.id)
+    await call.message.edit_text(text, reply_markup=kb, parse_mode="Markdown")
 
-# ۳. رادار حباب سکه
 @router.callback_query(F.data == "alert_bubble_radar")
 async def cb_bubble_radar(call: CallbackQuery):
-    await call.answer("در حال محاسبه آخرین حباب‌های بازار...")
+    await call.answer("در حال محاسبه حباب‌های بازار...")
     prices = await tgju_service.get_all_prices()
     bubbles = prices.get('bubbles', {})
     coins = prices.get('coins', {})
 
     lines = [
         "🎈 **رادار تحلیل حباب سکه‌ها (منبع: TGJU.org):**\n",
-        "حباب به معنای اختلاف قیمت معامله بازار با ارزش ذاتی طلای سکه است:\n"
+        "حباب نشان‌دهنده اختلاف قیمت بازار با ارزش طلای سکه است:\n"
     ]
 
     bubble_map = [
@@ -98,7 +98,7 @@ async def cb_bubble_radar(call: CallbackQuery):
             pct = bubbles[b_key].get('percentage', 0.0)
             c_val = coins[c_key]['toman']
             
-            status_icon = "🟢 حباب کم" if pct < 15 else ("🟡 حباب متوسط" if pct < 25 else "🔴 حباب بسیار بالا (ریسک بالا)")
+            status_icon = "🟢 حباب کم" if pct < 15 else ("🟡 حباب متوسط" if pct < 25 else "🔴 حباب بسیار بالا")
             lines.append(
                 f"• **{c_name}**:\n"
                 f"  ↳ قیمت کل: `{format_price(c_val)}`\n"
@@ -107,7 +107,7 @@ async def cb_bubble_radar(call: CallbackQuery):
 
     lines.append(
         "💡 **توصیه استراتژیک:**\n"
-        "هرگاه حباب ربع سکه یا نیم سکه به زیر ۱۵٪ کاهش یابد، بهترین زمان خرید سکه است. در زمان حباب بالای ۲۵٪، خرید طلای آبشده یا نقره گزینه بسیار کم‌ریسک‌تری است."
+        "هرگاه حباب ربع سکه یا نیم سکه به زیر ۱۵٪ کاهش یابد، بهترین زمان خرید سکه است. در حباب‌های بالاتر، خرید طلای آبشده یا نقره ریسک بسیار کمتری دارد."
     )
 
     kb = InlineKeyboardMarkup(inline_keyboard=[
@@ -115,10 +115,9 @@ async def cb_bubble_radar(call: CallbackQuery):
     ])
     await call.message.edit_text("\n".join(lines), reply_markup=kb, parse_mode="Markdown")
 
-# ۴. ثبت هشدار قیمت جدید
 @router.callback_query(F.data == "alert_new_select")
 async def cb_alert_new_select(call: CallbackQuery):
-    text = "🎯 **لطفاً دارایی مورد نظر را برای تنظیم هشدار قیمت انتخاب کنید:**"
+    text = "🎯 **دارایی مورد نظر را برای تنظیم هشدار قیمت انتخاب کنید:**"
     await call.message.edit_text(text, reply_markup=get_alert_items_keyboard(), parse_mode="Markdown")
     await call.answer()
 
@@ -141,7 +140,6 @@ async def cb_setalert_item(call: CallbackQuery, state: FSMContext):
         f"🎯 **تنظیم هشدار قیمت برای {item_title}:**\n\n"
         f"💰 قیمت فعلی بازار: `{format_price(curr_p)}`\n\n"
         f"لطفاً **قیمت هدف (تارگت)** مدنظر خود را به **تومان** وارد فرمایید.\n"
-        f"🔹 ربات به صورت خودکار تشخیص می‌دهد که هدف شما عبور به بالا است یا رسیدن به کف قیمت.\n"
         f"🔹 مثال: `{int(curr_p * 1.05):,d}`"
     )
     await call.message.edit_text(prompt, reply_markup=get_cancel_keyboard("btn_alerts_menu"), parse_mode="Markdown")
@@ -183,15 +181,10 @@ async def process_alert_target(message: Message, state: FSMContext):
         f"📌 **دارایی:** {item_title}\n"
         f"🎯 **شرط فعال‌سازی:** {dir_str} `{format_price(target_price)}`\n"
         f"💰 **قیمت فعلی:** `{format_price(curr_p)}`\n\n"
-        f"به محض برقراری این شرط، ربات بلافاصله در تلگرام به شما پیام خواهد داد."
+        f"به محض رسیدن بازار به این رقم، ربات در تلگرام به شما پیام هشدار خواهد داد."
     )
-    kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🔔 مدیریت هشدارها", callback_data="btn_alerts_menu")],
-        [InlineKeyboardButton(text="🔙 منوی اصلی", callback_data="btn_main_menu")]
-    ])
-    await message.answer(ans, reply_markup=kb, parse_mode="Markdown")
+    await message.answer(ans, reply_markup=get_main_reply_keyboard(), parse_mode="Markdown")
 
-# ۵. مشاهده و حذف هشدارهای فعال کاربر
 @router.callback_query(F.data == "alert_my_list")
 async def cb_my_alerts(call: CallbackQuery):
     alerts = await db_service.get_user_alerts(call.from_user.id)
@@ -205,7 +198,7 @@ async def cb_my_alerts(call: CallbackQuery):
         await call.answer()
         return
 
-    text = "📋 **لیست هشدارهای قیمت فعال شما:**\n\nبرای حذف هر هشدار، روی دکمه حذف مربوط به آن کلیک کنید:\n"
+    text = "📋 **لیست هشدارهای قیمت فعال شما:**\n\nبرای حذف هر هشدار، روی دکمه ضربدر کلیک کنید:\n"
     buttons = []
     for al in alerts:
         dir_icon = "📈" if al['direction'] == 'above' else "📉"
@@ -224,5 +217,4 @@ async def cb_delete_alert(call: CallbackQuery):
     alert_id = int(call.data.replace("delalert_", ""))
     await db_service.delete_alert(alert_id, call.from_user.id)
     await call.answer("هشدار با موفقیت حذف شد.")
-    # رفرش لیست
     await cb_my_alerts(call)
