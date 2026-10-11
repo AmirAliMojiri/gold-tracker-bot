@@ -8,3 +8,8 @@ env/
 .idea/
 .vscode/
 test_*.py
+build/
+**/build/
+.gradle/
+*.apk
+*.aab
