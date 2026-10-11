@@ -126,6 +126,24 @@ const StorageService = {
     localStorage.setItem('tala_portfolio', JSON.stringify(AppState.portfolio));
     UI.updatePortfolioCountBadge();
     UI.renderPortfolio();
+    this.syncPortfolioToServer();
+  },
+
+  async syncPortfolioToServer() {
+    if (AuthService && AuthService.token) {
+      try {
+        await fetch('/api/portfolio', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${AuthService.token}`
+          },
+          body: JSON.stringify({ portfolio: AppState.portfolio })
+        });
+      } catch (e) {
+        console.warn('Sync to server failed', e);
+      }
+    }
   },
 
   loadAlerts() {
@@ -145,11 +163,112 @@ const StorageService = {
   }
 };
 
+// Auth Service
+const AuthService = {
+  token: localStorage.getItem('tala_auth_token') || null,
+  user: null,
+
+  async checkAuth() {
+    if (!this.token) {
+      UI.updateAuthUI(null);
+      return null;
+    }
+    try {
+      const res = await fetch('/api/auth/me', {
+        headers: { 'Authorization': `Bearer ${this.token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.authenticated && data.user) {
+          this.user = data.user;
+          UI.updateAuthUI(this.user);
+          if (data.portfolio && Array.isArray(data.portfolio) && data.portfolio.length > 0) {
+            AppState.portfolio = data.portfolio;
+            localStorage.setItem('tala_portfolio', JSON.stringify(AppState.portfolio));
+            UI.updatePortfolioCountBadge();
+            UI.renderPortfolio();
+          }
+          return this.user;
+        }
+      }
+    } catch (e) {
+      console.warn('Auth check failed', e);
+    }
+    this.token = null;
+    localStorage.removeItem('tala_auth_token');
+    UI.updateAuthUI(null);
+    return null;
+  },
+
+  async login(username, password) {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      this.token = data.token;
+      this.user = data.user;
+      localStorage.setItem('tala_auth_token', this.token);
+      UI.updateAuthUI(this.user);
+
+      if (data.portfolio && Array.isArray(data.portfolio) && data.portfolio.length > 0) {
+        AppState.portfolio = data.portfolio;
+        localStorage.setItem('tala_portfolio', JSON.stringify(AppState.portfolio));
+      } else if (AppState.portfolio.length > 0) {
+        await StorageService.syncPortfolioToServer();
+      }
+      UI.updatePortfolioCountBadge();
+      UI.renderPortfolio();
+      return { success: true };
+    }
+    return { success: false, error: data.error || 'نام کاربری یا رمز عبور اشتباه است.' };
+  },
+
+  async register(username, password, display_name) {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password, display_name })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      this.token = data.token;
+      this.user = data.user;
+      localStorage.setItem('tala_auth_token', this.token);
+      UI.updateAuthUI(this.user);
+      if (AppState.portfolio.length > 0) {
+        await StorageService.syncPortfolioToServer();
+      }
+      return { success: true };
+    }
+    return { success: false, error: data.error || 'خطا در ثبت‌نام.' };
+  },
+
+  async logout() {
+    if (this.token) {
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${this.token}` }
+        });
+      } catch (e) {}
+    }
+    this.token = null;
+    this.user = null;
+    localStorage.removeItem('tala_auth_token');
+    UI.updateAuthUI(null);
+    UI.showToast('از حساب کاربری خارج شدید.');
+  }
+};
+
 // API Service
 const ApiService = {
-  async fetchPrices() {
+  async fetchPrices(force = false) {
     try {
-      const res = await fetch('/api/prices');
+      const url = force ? '/api/prices?force=true' : '/api/prices';
+      const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
         if (data && data.gold && Object.keys(data.gold).length > 0) {
@@ -197,6 +316,40 @@ const ApiService = {
 
 // UI Rendering Module
 const UI = {
+  _toastTimer: null,
+
+  showToast(msg) {
+    const toast = document.getElementById('toastNotification');
+    if (toast) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(this._toastTimer);
+      this._toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3500);
+    }
+  },
+
+  updateAuthUI(user) {
+    const openBtn = document.getElementById('openAuthModalBtn');
+    const badge = document.getElementById('userProfileBadge');
+    const nameEl = document.getElementById('userDisplayName');
+    const avatarEl = document.getElementById('userAvatarLetter');
+
+    if (user) {
+      if (openBtn) openBtn.style.display = 'none';
+      if (badge) badge.style.display = 'flex';
+      if (nameEl) nameEl.textContent = user.display_name || user.username;
+      if (avatarEl) {
+        const letter = (user.display_name || user.username || 'ک')[0];
+        avatarEl.textContent = letter;
+      }
+    } else {
+      if (openBtn) openBtn.style.display = 'inline-flex';
+      if (badge) badge.style.display = 'none';
+    }
+  },
+
   initTheme() {
     document.documentElement.setAttribute('data-theme', AppState.theme);
     const moon = document.getElementById('themeIconMoon');
@@ -892,8 +1045,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Theme toggle
   document.getElementById('themeToggleBtn').addEventListener('click', UI.toggleTheme);
 
-  // Initial Data Fetch
-  await ApiService.fetchPrices();
+  // Initial Data Fetch & Cloud Auth Check
+  await ApiService.fetchPrices(true);
+  await AuthService.checkAuth();
   UI.renderOverviewCards();
   UI.renderMarketBoard();
   UI.renderPortfolio();
@@ -979,8 +1133,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Refresh Button
   document.getElementById('refreshBtn').addEventListener('click', async () => {
     const updateText = document.getElementById('updateStatusText');
-    updateText.textContent = 'در حال دریافت...';
-    await ApiService.fetchPrices();
+    updateText.textContent = 'در حال استعلام...';
+    UI.showToast('📡 در حال دریافت آخرین نرخ‌های لحظه‌ای از TGJU...');
+    await ApiService.fetchPrices(true);
     UI.renderOverviewCards();
     UI.renderMarketBoard();
     UI.renderPortfolio();
@@ -989,6 +1144,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     UI.renderAlerts();
     UI.checkTriggeredAlerts();
     updateText.textContent = 'زنده (TGJU)';
+    const now = new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const lastSync = document.getElementById('lastSyncTimeText');
+    if (lastSync) lastSync.textContent = `آخرین استعلام: ${now}`;
+    UI.showToast(`✅ نرخ‌ها با موفقیت بروزرسانی شدند (${now})`);
   });
 
   // Add Holding Modal Events
@@ -1137,6 +1296,103 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('exportDataBtn').addEventListener('click', () => {
     window.print();
   });
+
+  // Auth Modal Controls
+  const authModal = document.getElementById('authModal');
+  const openAuthBtn = document.getElementById('openAuthModalBtn');
+  const closeAuthBtn = document.getElementById('closeAuthModalBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const tabBtnLogin = document.getElementById('tabBtnLogin');
+  const tabBtnRegister = document.getElementById('tabBtnRegister');
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+  const loginMsg = document.getElementById('loginMsg');
+  const registerMsg = document.getElementById('registerMsg');
+
+  if (openAuthBtn && authModal) {
+    openAuthBtn.addEventListener('click', () => {
+      authModal.classList.add('active');
+      if (loginMsg) { loginMsg.className = 'auth-msg'; loginMsg.textContent = ''; }
+      if (registerMsg) { registerMsg.className = 'auth-msg'; registerMsg.textContent = ''; }
+    });
+  }
+
+  if (closeAuthBtn && authModal) {
+    closeAuthBtn.addEventListener('click', () => authModal.classList.remove('active'));
+  }
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      if (confirm('آیا مایلید از حساب کاربری خود خارج شوید؟')) {
+        await AuthService.logout();
+      }
+    });
+  }
+
+  if (tabBtnLogin && tabBtnRegister) {
+    tabBtnLogin.addEventListener('click', () => {
+      tabBtnLogin.classList.add('active');
+      tabBtnRegister.classList.remove('active');
+      loginForm.classList.add('active');
+      registerForm.classList.remove('active');
+    });
+
+    tabBtnRegister.addEventListener('click', () => {
+      tabBtnRegister.classList.add('active');
+      tabBtnLogin.classList.remove('active');
+      registerForm.classList.add('active');
+      loginForm.classList.remove('active');
+    });
+  }
+
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const u = document.getElementById('loginUsername').value.trim();
+      const p = document.getElementById('loginPassword').value.trim();
+      loginMsg.className = 'auth-msg';
+      loginMsg.textContent = 'در حال بررسی اطلاعات...';
+      loginMsg.style.display = 'block';
+
+      const res = await AuthService.login(u, p);
+      if (res.success) {
+        loginMsg.className = 'auth-msg success';
+        loginMsg.textContent = 'خوش آمدید! سبد دارایی شما همگام‌سازی شد.';
+        setTimeout(() => {
+          authModal.classList.remove('active');
+          UI.showToast(`خوش آمدید، ${AuthService.user.display_name || u} 👋`);
+        }, 800);
+      } else {
+        loginMsg.className = 'auth-msg error';
+        loginMsg.textContent = res.error;
+      }
+    });
+  }
+
+  if (registerForm) {
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('regDisplayName').value.trim();
+      const u = document.getElementById('regUsername').value.trim();
+      const p = document.getElementById('regPassword').value.trim();
+      registerMsg.className = 'auth-msg';
+      registerMsg.textContent = 'در حال ایجاد حساب کاربری...';
+      registerMsg.style.display = 'block';
+
+      const res = await AuthService.register(u, p, name);
+      if (res.success) {
+        registerMsg.className = 'auth-msg success';
+        registerMsg.textContent = 'حساب با موفقیت ایجاد شد و سبد شما ثبت گردید!';
+        setTimeout(() => {
+          authModal.classList.remove('active');
+          UI.showToast(`حساب کاربری ${name} فعال شد 🎉`);
+        }, 800);
+      } else {
+        registerMsg.className = 'auth-msg error';
+        registerMsg.textContent = res.error;
+      }
+    });
+  }
 
   // Periodic Polling every 60 seconds
   setInterval(async () => {

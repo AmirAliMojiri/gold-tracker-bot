@@ -51,11 +51,82 @@ async def app_js_handler(request):
 async def api_prices_handler(request):
     """API دریافت کلیه نرخ‌های زنده TGJU شامل طلا، سکه، نقره، حباب‌ها، سقف و کف روزانه و شاخص‌های کلان"""
     try:
-        prices = await tgju_service.get_all_prices()
+        force = request.query.get("force", "").lower() in ["true", "1", "yes"]
+        prices = await tgju_service.get_all_prices(force_refresh=force)
         return web.json_response(prices)
     except Exception as e:
         logger.error(f"Error fetching prices: {e}")
         return web.json_response({"error": str(e)}, status=500)
+
+async def get_current_user(request):
+    auth_header = request.headers.get("Authorization", "")
+    token = ""
+    if auth_header.startswith("Bearer "):
+        token = auth_header[7:].strip()
+    elif "token" in request.query:
+        token = request.query.get("token", "").strip()
+    if not token:
+        return None, None
+    user = await db_service.get_web_user_by_token(token)
+    return user, token
+
+async def api_register_handler(request):
+    try:
+        body = await request.json()
+        username = body.get("username", "")
+        password = body.get("password", "")
+        display_name = body.get("display_name", "")
+        res = await db_service.register_web_user(username, password, display_name)
+        status = 200 if res.get("success") else 400
+        return web.json_response(res, status=status)
+    except Exception as e:
+        return web.json_response({"success": False, "error": str(e)}, status=500)
+
+async def api_login_handler(request):
+    try:
+        body = await request.json()
+        username = body.get("username", "")
+        password = body.get("password", "")
+        res = await db_service.login_web_user(username, password)
+        status = 200 if res.get("success") else 400
+        return web.json_response(res, status=status)
+    except Exception as e:
+        return web.json_response({"success": False, "error": str(e)}, status=500)
+
+async def api_me_handler(request):
+    user, token = await get_current_user(request)
+    if not user:
+        return web.json_response({"authenticated": False}, status=401)
+    portfolio = await db_service.get_web_user_portfolio(user["id"])
+    return web.json_response({
+        "authenticated": True,
+        "user": user,
+        "portfolio": portfolio
+    })
+
+async def api_logout_handler(request):
+    user, token = await get_current_user(request)
+    if token:
+        await db_service.logout_web_user(token)
+    return web.json_response({"success": True})
+
+async def api_get_portfolio_handler(request):
+    user, _ = await get_current_user(request)
+    if not user:
+        return web.json_response({"error": "Unauthorized"}, status=401)
+    portfolio = await db_service.get_web_user_portfolio(user["id"])
+    return web.json_response({"portfolio": portfolio})
+
+async def api_save_portfolio_handler(request):
+    user, _ = await get_current_user(request)
+    if not user:
+        return web.json_response({"error": "Unauthorized"}, status=401)
+    body = await request.json()
+    portfolio = body.get("portfolio", [])
+    if isinstance(portfolio, list):
+        await db_service.save_web_user_portfolio(user["id"], portfolio)
+        return web.json_response({"success": True})
+    return web.json_response({"error": "Invalid portfolio format"}, status=400)
 
 async def api_chart_history_handler(request):
     """API تولید سری زمانی و اندیکاتورهای تکنیکال بر اساس آخرین نرخ بازار"""
@@ -163,6 +234,14 @@ async def main():
     app.router.add_post("/api/advisor", api_advisor_handler)
     app.router.add_get("/health", health_check)
     app.router.add_get("/api/health", health_check)
+
+    # روت‌های حساب کاربری وب و پرتفوی ابری
+    app.router.add_post("/api/auth/register", api_register_handler)
+    app.router.add_post("/api/auth/login", api_login_handler)
+    app.router.add_get("/api/auth/me", api_me_handler)
+    app.router.add_post("/api/auth/logout", api_logout_handler)
+    app.router.add_get("/api/portfolio", api_get_portfolio_handler)
+    app.router.add_post("/api/portfolio", api_save_portfolio_handler)
 
     # راه‌اندازی ربات تلگرام (اختیاری؛ در پس‌زمینه در صورت موجود بودن توکن)
     bot = None

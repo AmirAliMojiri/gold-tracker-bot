@@ -1768,3 +1768,174 @@ canvas#mainChart {
     height: 280px;
   }
 }
+
+/* User Account & Profile Badge */
+.user-account-widget {
+  display: flex;
+  align-items: center;
+}
+
+.btn-account {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  background-color: var(--surface-soft);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-account:hover {
+  background-color: var(--gold-soft);
+  color: var(--gold-dark);
+  border-color: var(--gold);
+}
+
+.user-profile-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  background-color: var(--surface-soft);
+  border: 1px solid var(--gold);
+  border-radius: var(--radius-sm);
+}
+
+.user-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.user-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.btn-logout {
+  background: none;
+  border: none;
+  color: var(--negative);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 3px;
+  border-radius: 4px;
+  transition: opacity 0.2s;
+}
+
+.btn-logout:hover {
+  opacity: 0.75;
+}
+
+/* Auth Modal Tabs & Forms */
+.auth-card {
+  max-width: 440px;
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+}
+
+.auth-tab-btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.auth-tab-btn.active {
+  background-color: var(--gold-soft);
+  color: var(--gold-dark);
+}
+
+.auth-form-pane {
+  display: none;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.auth-form-pane.active {
+  display: flex;
+}
+
+.auth-msg {
+  font-size: 0.82rem;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  display: none;
+}
+
+.auth-msg.error {
+  display: block;
+  background-color: rgba(220, 38, 38, 0.1);
+  color: var(--negative);
+  border: 1px solid var(--negative);
+}
+
+.auth-msg.success {
+  display: block;
+  background-color: rgba(22, 163, 74, 0.1);
+  color: var(--positive);
+  border: 1px solid var(--positive);
+}
+
+.auth-submit-btn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 6px;
+}
+
+/* Toast Notification */
+.toast-notification {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  background-color: var(--sidebar);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: var(--radius-sm);
+  border-right: 4px solid var(--gold);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  font-size: 0.85rem;
+  font-weight: 600;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.toast-notification.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+

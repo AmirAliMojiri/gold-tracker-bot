@@ -1,4 +1,7 @@
 import aiosqlite
+import hashlib
+import secrets
+import json
 from typing import Dict, Any, List, Optional
 from config import DB_PATH
 
@@ -97,6 +100,36 @@ class Database:
                     bubble_alert INTEGER DEFAULT 1,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY(user_id) REFERENCES users(user_id)
+                )
+            """)
+
+            # جداول اختصاصی حساب‌های کاربری وب و پرتفوی ابری
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS web_users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT UNIQUE NOT NULL,
+                    password_hash TEXT NOT NULL,
+                    display_name TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS web_portfolios (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL UNIQUE,
+                    portfolio_json TEXT NOT NULL DEFAULT '[]',
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY(user_id) REFERENCES web_users(id)
+                )
+            """)
+
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS web_sessions (
+                    token TEXT PRIMARY KEY,
+                    user_id INTEGER NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY(user_id) REFERENCES web_users(id)
                 )
             """)
 
@@ -261,5 +294,138 @@ class Database:
             async with db.execute("SELECT user_id FROM user_settings WHERE daily_digest = 1") as cursor:
                 rows = await cursor.fetchall()
                 return [r[0] for r in rows]
+
+    # ==========================================
+    # متدهای حساب کاربری وب و پرتفوی ابری
+    # ==========================================
+    @staticmethod
+    def _hash_password(password: str) -> str:
+        return hashlib.sha256(f"tala_salt_2026_{password}".encode()).hexdigest()
+
+    async def register_web_user(self, username: str, password: str, display_name: str = "") -> Dict[str, Any]:
+        username = username.strip().lower()
+        if not username or len(username) < 3:
+            return {'success': False, 'error': 'نام کاربری باید حداقل ۳ کاراکتر باشد.'}
+        if not password or len(password) < 4:
+            return {'success': False, 'error': 'رمز عبور باید حداقل ۴ کاراکتر باشد.'}
+
+        display_name = display_name.strip() or username
+        password_hash = self._hash_password(password)
+
+        async with aiosqlite.connect(self.db_path) as db:
+            async with db.execute("SELECT id FROM web_users WHERE username = ?", (username,)) as cursor:
+                if await cursor.fetchone():
+                    return {'success': False, 'error': 'این نام کاربری قبلاً ثبت شده است.'}
+
+            cursor = await db.execute(
+                "INSERT INTO web_users (username, password_hash, display_name) VALUES (?, ?, ?)",
+                (username, password_hash, display_name)
+            )
+            user_id = cursor.lastrowid
+
+            token = secrets.token_hex(24)
+            await db.execute("INSERT INTO web_sessions (token, user_id) VALUES (?, ?)", (token, user_id))
+            await db.commit()
+
+            return {
+                'success': True,
+                'user': {
+                    'id': user_id,
+                    'username': username,
+                    'display_name': display_name,
+                },
+                'token': token,
+            }
+
+    async def login_web_user(self, username: str, password: str) -> Dict[str, Any]:
+        username = username.strip().lower()
+        password_hash = self._hash_password(password)
+
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute(
+                "SELECT id, username, display_name FROM web_users WHERE username = ? AND password_hash = ?",
+                (username, password_hash)
+            ) as cursor:
+                row = await cursor.fetchone()
+                if not row:
+                    return {'success': False, 'error': 'نام کاربری یا رمز عبور اشتباه است.'}
+
+                user_id = row['id']
+                display_name = row['display_name']
+
+            token = secrets.token_hex(24)
+            await db.execute("INSERT INTO web_sessions (token, user_id) VALUES (?, ?)", (token, user_id))
+
+            portfolio = []
+            async with db.execute("SELECT portfolio_json FROM web_portfolios WHERE user_id = ?", (user_id,)) as p_cur:
+                p_row = await p_cur.fetchone()
+                if p_row and p_row['portfolio_json']:
+                    try:
+                        portfolio = json.loads(p_row['portfolio_json'])
+                    except Exception:
+                        portfolio = []
+
+            await db.commit()
+
+            return {
+                'success': True,
+                'user': {
+                    'id': user_id,
+                    'username': username,
+                    'display_name': display_name,
+                },
+                'token': token,
+                'portfolio': portfolio,
+            }
+
+    async def get_web_user_by_token(self, token: str) -> Optional[Dict[str, Any]]:
+        if not token:
+            return None
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute("""
+                SELECT u.id, u.username, u.display_name
+                FROM web_users u
+                JOIN web_sessions s ON u.id = s.user_id
+                WHERE s.token = ?
+            """, (token,)) as cursor:
+                row = await cursor.fetchone()
+                if row:
+                    return dict(row)
+        return None
+
+    async def logout_web_user(self, token: str) -> bool:
+        if not token:
+            return False
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute("DELETE FROM web_sessions WHERE token = ?", (token,))
+            await db.commit()
+            return True
+
+    async def save_web_user_portfolio(self, user_id: int, portfolio: list) -> bool:
+        portfolio_json = json.dumps(portfolio, ensure_ascii=False)
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute("""
+                INSERT INTO web_portfolios (user_id, portfolio_json, updated_at)
+                VALUES (?, ?, CURRENT_TIMESTAMP)
+                ON CONFLICT(user_id) DO UPDATE SET
+                    portfolio_json = excluded.portfolio_json,
+                    updated_at = CURRENT_TIMESTAMP
+            """, (user_id, portfolio_json))
+            await db.commit()
+            return True
+
+    async def get_web_user_portfolio(self, user_id: int) -> list:
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute("SELECT portfolio_json FROM web_portfolios WHERE user_id = ?", (user_id,)) as cursor:
+                row = await cursor.fetchone()
+                if row and row['portfolio_json']:
+                    try:
+                        return json.loads(row['portfolio_json'])
+                    except Exception:
+                        return []
+        return []
 
 db_service = Database()
