@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مستندات جامع فنی و کدنویسی اپلیکیشن FFQ Nutrition</title>
+    <style>
+        :root {
+            --primary: #5E9434;
+            --primary-dark: #3E6621;
+            --primary-light: #86BF5C;
+            --primary-container: #E4F3DA;
+            --secondary: #5A754E;
+            --bg-color: #FAF9F3;
+            --surface-color: #FFFFFF;
+            --text-main: #1B1F17;
+            --text-muted: #556050;
+            --border-color: #DDE5D8;
+            --code-bg: #1A1E24;
+            --code-text: #E6EDF3;
+            --accent-xp: #2563EB;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Vazirmatn, Tahoma, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.8;
+            padding: 0;
+        }
+
+        /* Layout Container */
+        .wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 320px;
+            background: #FFFFFF;
+            border-left: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 24px 16px;
+            flex-shrink: 0;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.03);
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--primary-container);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-brand .logo-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #FEFAEE;
+            border: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .sidebar-brand h2 {
+            font-size: 1.15rem;
+            color: var(--primary-dark);
+            font-weight: 800;
+        }
+
+        .sidebar-nav ul {
+            list-style: none;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 6px;
+        }
+
+        .sidebar-nav a {
+            display: block;
+            padding: 8px 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-nav a:hover {
+            background: var(--primary-container);
+            color: var(--primary-dark);
+            font-weight: 700;
+            padding-right: 18px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px 60px;
+            max-width: 1200px;
+        }
+
+        header.hero {
+            background: linear-gradient(135deg, #EBF5E5 0%, #FAF9F3 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 36px 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 20px rgba(94, 148, 52, 0.08);
+        }
+
+        header.hero h1 {
+            color: var(--primary-dark);
+            font-size: 2.2rem;
+            font-weight: 900;
+            margin-bottom: 12px;
+        }
+
+        header.hero p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            line-height: 1.7;
+        }
+
+        .badge-list {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: #FFFFFF;
+            border: 1px solid var(--primary);
+            color: var(--primary-dark);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        /* Sections */
+        section {
+            background: var(--surface-color);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            padding: 36px 36px;
+            margin-bottom: 36px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+
+        h2.section-title {
+            color: var(--primary-dark);
+            font-size: 1.6rem;
+            font-weight: 800;
+            padding-bottom: 14px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid var(--primary-container);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h3.sub-title {
+            color: var(--secondary);
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 28px 0 14px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        p {
+            margin-bottom: 14px;
+            color: #2D3328;
+            font-size: 1rem;
+        }
+
+        /* Callout Box */
+        .callout {
+            background: var(--primary-container);
+            border-right: 5px solid var(--primary);
+            padding: 18px 22px;
+            border-radius: 10px;
+            margin: 20px 0;
+            color: var(--text-main);
+        }
+
+        .callout strong {
+            color: var(--primary-dark);
+        }
+
+        /* Code Blocks */
+        .code-container {
+            direction: ltr;
+            text-align: left;
+            background: var(--code-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+            position: relative;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
+            border: 1px solid #2B313A;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #30363D;
+            font-family: Consolas, monospace;
+            font-size: 0.8rem;
+            color: #8B949E;
+        }
+
+        pre {
+            font-family: "JetBrains Mono", Consolas, "Courier New", monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--code-text);
+            margin: 0;
+        }
+
+        /* Syntax Highlighting Fake Classes */
+        .kw { color: #FF7B72; font-weight: bold; } /* keyword */
+        .dt { color: #79C0FF; } /* data type */
+        .fn { color: #D2A8FF; } /* function */
+        .str { color: #A5D6FF; } /* string */
+        .num { color: #FFA657; } /* number */
+        .com { color: #8B949E; font-style: italic; } /* comment */
+        .ann { color: #7EE787; } /* annotation */
+
+        /* Formula Card */
+        .formula-card {
+            background: #F4F7F2;
+            border: 1px solid #D6E2CE;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin: 18px 0;
+            text-align: center;
+            font-family: Consolas, monospace;
+            font-size: 1.1rem;
+            color: #1F4E11;
+            font-weight: 700;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px 16px;
+            text-align: right;
+        }
+
+        th {
+            background: var(--primary-container);
+            color: var(--primary-dark);
+            font-weight: 800;
+        }
+
+        tr:nth-child(even) {
+            background: #FDFDFB;
+        }
+
+        /* Windows XP Loader Mockup */
+        .xp-mockup {
+            background: #000000;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            color: white;
+            margin: 20px 0;
+            border: 2px solid #222;
+        }
+
+        .xp-track {
+            width: 220px;
+            height: 18px;
+            background: #000000;
+            border: 2px solid #5A5A5A;
+            border-radius: 4px;
+            margin: 16px auto;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+        }
+
+        .xp-blocks {
+            display: flex;
+            gap: 3px;
+            animation: xp-slide 1.3s linear infinite;
+        }
+
+        .xp-block {
+            width: 10px;
+            height: 12px;
+            border-radius: 2px;
+            background: linear-gradient(180deg, #B4F285 0%, #5E9434 50%, #285012 100%);
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+
+        @keyframes xp-slide {
+            0% { transform: translateX(220px); }
+            100% { transform: translateX(-50px); }
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="logo-circle">🍏</div>
+            <div>
+                <h2>FFQ Nutrition</h2>
+                <span style="font-size: 0.78rem; color: #777;">مستندات معماری و سورس کد</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="#sec1">۱. معماری کلان و انتخاب پلتفرم</a></li>
+                <li><a href="#sec2">۲. ماشین وضعیت ناوبری و MainActivity</a></li>
+                <li><a href="#sec3">۳. مدیریت نشست و تنظیمات (AppPrefs)</a></li>
+                <li><a href="#sec4">۴. مدل‌های داده و فرمول‌های محاسباتی</a></li>
+                <li><a href="#sec5">۵. الگوریتم ماتریسی ۶۲ ریزمغذی</a></li>
+                <li><a href="#sec6">۶. پرسشنامه ۱۴۷ قلمی و همگام‌سازی</a></li>
+                <li><a href="#sec7">۷. فرم ثبت‌نام ۵۲ ستونه و ۶ آکاردئون</a></li>
+                <li><a href="#sec8">۸. موتور بایت‌محور تولید اکسل (OOXML)</a></li>
+                <li><a href="#sec9">۹. انیمیشن لودینگ ویندوز XP در Compose</a></li>
+                <li><a href="#sec10">۱۰. لایه مخزن داده‌ها (FFQRepository)</a></li>
+                <li><a href="#sec11">۱۱. پالت رنگی سبز پاستیلی و متریال ۳</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Body -->
+    <main class="main-content">
+        <header class="hero">
+            <h1>مرجع جامع مهندسی نرم‌افزار اپلیکیشن FFQ Nutrition</h1>
+            <p>این سند تحلیل موشکافانه، کدهای منبع اصلی، الگوهای طراحی واکنش‌گرا و فرمول‌های بالینی پروژه پرسشنامه جامع بسامد خوراک (Food Frequency Questionnaire) را در پلتفرم اندروید تشریح می‌کند.</p>
+            <div class="badge-list">
+                <span class="badge">Kotlin 1.9</span>
+                <span class="badge">Jetpack Compose</span>
+                <span class="badge">Material Design 3</span>
+                <span class="badge">Pure Kotlin OpenXML Engine</span>
+                <span class="badge">Single-Activity Architecture</span>
+                <span class="badge">Zero External Heavy Bloat</span>
+            </div>
+        </header>
+
+        <!-- Section 1 -->
+        <section id="sec1">
+            <h2 class="section-title">۱. معماری کلان نرم‌افزار و دلایل انتخاب ابزارها</h2>
+            <p>پروژه بر پایه متدولوژی مدرن <strong>Single Activity Declarative UI</strong> پایه‌ریزی شده است. در برنامه‌نویسی سنتی اندروید، چندین اکتیویتی یا فرگمنت با فایل‌های چیدمان پیچیده XML و کدهای سنگین بایندینگ ایجاد می‌شد که مصرف حافظه بسیار بالایی داشت و در انتقال داده‌ها میان مراحل پرسشنامه، با ارورهای معروفی مانند <code>TransactionTooLargeException</code> یا گم شدن وضعیت (State Loss) مواجه می‌گردید.</p>
+            
+            <div class="callout">
+                <strong>رویکرد پیاده‌سازی شده در این اپلیکیشن:</strong>
+                کل برنامه تنها دارای یک اکتیویتی واحد (<code>MainActivity</code>) است. وضعیت صفحات به صورت یک State Machine امن با کلاس مهر و موم‌شده (<code>Sealed Class Screen</code>) مدیریت می‌شود. داده‌ها به صورت Immutable State در حافظه نگهداری شده و با ترنزیشن نرم <code>Crossfade</code> کاربر میان مراحل پرسشنامه جابجا می‌شود.
+            </div>
+
+            <p><strong>عدم وابستگی به اینترنت و سرویس‌های خارجی:</strong> به دلیل حساسیت داده‌های سلامت بیماران، کلیه پردازش‌های بیومتریک، محاسبات فرکانس و تولید فایل‌های اکسل در پردازنده دستگاه کلاینت (روی خود گوشی) به صورت آفلاین اجرا می‌شود.</p>
+        </section>
+
+        <!-- Section 2 -->
+        <section id="sec2">
+            <h2 class="section-title">۲. نقطه ورود و ماشین وضعیت ناوبری (MainActivity & AppNavigator)</h2>
+            <p>کلاس <code>MainActivity</code> وظیفه مقداردهی اولیه محیط کامپوز، خواندن تنظیمات حالت تم (روشن/تاریک) و تزریق کانتکست به ساختار اپلیکیشن را بر عهده دارد:</p>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span>MainActivity.kt</span>
+                    <span>Kotlin</span>
+                </div>
+                <pre><span class="kw">class</span> <span class="dt">MainActivity</span> : <span class="dt">ComponentActivity</span>() {
+    <span class="kw">override fun</span> <span class="fn">onCreate</span>(savedInstanceState: <span class="dt">Bundle</span>?) {
+        <span class="kw">super</span>.<span class="fn">onCreate</span>(savedInstanceState)
+        <span class="fn">setContent</span> {
+            <span class="com">// خواندن وضعیت پایدار تم از SharedPreferences</span>
+            <span class="kw">var</span> themeMode <span class="kw">by</span> <span class="fn">remember</span> { <span class="fn">mutableStateOf</span>(AppPrefs.<span class="fn">getThemeMode</span>(<span class="kw">this</span>)) }
+            
+            <span class="fn">FFQAppTheme</span>(themeMode = themeMode) {
+                <span class="fn">Surface</span>(
+                    modifier = Modifier.<span class="fn">fillMaxSize</span>(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    <span class="fn">AppNavigator</span>(
+                        themeMode = themeMode,
+                        onThemeModeChanged = { themeMode = it }
+                    )
+                }
+            }
+        }
+    }
+}</pre>
+            </div>
+
+            <h3 class="sub-title">تحلیل ماشین وضعیت در AppNavigator.kt</h3>
+            <p>این کامپوننت هسته هدایت کاربر است. سه وظیفه مهندسی را اجرا می‌کند:</p>
+            <ol style="padding-right: 20px; margin-bottom: 16px;">
+                <li><strong>اعمال چیدمان راست به چپ عمومی:</strong> با استفاده از <code>CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl)</code> کل برنامه بدون نیاز به تگ‌های متفرقه در تمام گوشی‌ها به صورت فارسی استاندارد رندر می‌شود.</li>
+                <li><strong>مدیریت دکمه فیزیکی بازگشت (BackHandler):</strong> با زدن دکمه بازگشت در منوی اصلی، با پیاده‌سازی تایمر کوئری ۲ ثانیه‌ای (<code>delay(2000)</code>) پیام «برای خروج مجدداً دکمه بازگشت را بزنید» نمایش داده می‌شود تا کاربر تصادفاً از برنامه خارج نشود.</li>
+                <li><strong>انتقال داده‌ها بدون گم‌شدگی (Safe State Propagation):</strong> ارسال مشخصات بیمار از ثبت‌نام به پرسشنامه بسامد و هدایت به صفحه جزئیات بیمار پس از ذخیره موفق.</li>
+            </ol>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span>AppNavigator.kt</span>
+                    <span>Kotlin</span>
+                </div>
+                <pre><span class="ann">@Composable</span>
+<span class="kw">fun</span> <span class="fn">AppNavigator</span>(themeMode: <span class="dt">String</span> = <span class="str">"light"</span>, onThemeModeChanged: (<span class="dt">String</span>) -> <span class="dt">Unit</span> = {}) {
+    <span class="kw">var</span> currentScreen: <span class="dt">Screen</span> <span class="kw">by</span> <span class="fn">remember</span> { <span class="fn">mutableStateOf</span>(Screen.Splash) }
+    <span class="kw">val</span> context = LocalContext.current
+    <span class="kw">val</span> scope = <span class="fn">rememberCoroutineScope</span>()
+    <span class="kw">var</span> backPressedOnce <span class="kw">by</span> <span class="fn">remember</span> { <span class="fn">mutableStateOf</span>(<span class="kw">false</span>) }
+
+    <span class="fn">CompositionLocalProvider</span>(
+        LocalLayoutDirection <span class="kw">provides</span> LayoutDirection.Rtl,
+        LocalAppStrings <span class="kw">provides</span> <span class="fn">AppStrings</span>()
+    ) {
+        <span class="fn">BackHandler</span> {
+            <span class="kw">when</span> (currentScreen) {
+                <span class="kw">is</span> Screen.Splash -> { }
+                <span class="kw">is</span> Screen.Login -> (context <span class="kw">as</span>? <span class="dt">Activity</span>)?.<span class="fn">finish</span>()
+                <span class="kw">is</span> Screen.MainMenu -> {
+                    <span class="kw">if</span> (backPressedOnce) (context <span class="kw">as</span>? <span class="dt">Activity</span>)?.<span class="fn">finish</span>()
+                    <span class="kw">else</span> {
+                        backPressedOnce = <span class="kw">true</span>
+                        Toast.<span class="fn">makeText</span>(context, <span class="str">"برای خروج مجدداً بازگشت را بزنید"</span>, Toast.LENGTH_SHORT).<span class="fn">show</span>()
+                        scope.<span class="fn">launch</span> { <span class="fn">delay</span>(<span class="num">2000</span>); backPressedOnce = <span class="kw">false</span> }
+                    }
+                }
+                <span class="kw">is</span> Screen.Registration -> currentScreen = Screen.MainMenu
+                <span class="kw">is</span> Screen.FFQQuestionnaire -> currentScreen = Screen.MainMenu
+                <span class="kw">is</span> Screen.PatientDetail -> currentScreen = Screen.History
+                <span class="kw">else</span> -> currentScreen = Screen.MainMenu
+            }
+        }
+
+        <span class="fn">Crossfade</span>(targetState = currentScreen, animationSpec = <span class="fn">tween</span>(<span class="num">400</span>)) { screen ->
+            <span class="kw">when</span> (screen) {
+                <span class="kw">is</span> Screen.Splash -> <span class="fn">SplashScreen</span>(onFinished = { currentScreen = Screen.Login })
+                <span class="kw">is</span> Screen.Login -> <span class="fn">LoginScreen</span>(...)
+                <span class="kw">is</span> Screen.Registration -> <span class="fn">RegistrationScreen</span>(...)
+                <span class="kw">is</span> Screen.FFQQuestionnaire -> <span class="fn">FFQQuestionnaireScreen</span>(...)
+                <span class="kw">is</span> Screen.PatientDetail -> <span class="fn">PatientDetailScreen</span>(...)
+                <span class="kw">is</span> Screen.History -> <span class="fn">HistoryScreen</span>(...)
+            }
+        }
+    }
+}</pre>
+            </div>
+        </section>
+
+        <!-- Section 3 -->
+        <section id="sec3">
+            <h2 class="section-title">۳. مدیریت نشست و کاربران در لایه دیسک (AppPrefs.kt)</h2>
+            <p>برای مدیریت لیست پرسنل درمانگاهی، احراز هویت ورود و ذخیره تم برنامه، از کلاس کاتلین <code>AppPrefs</code> با دسترسی <code>Context.MODE_PRIVATE</code> استفاده شده است. لیست کاربران به عنوان یک آرایه از جفت مقادیر نام کاربری و پسورد با <code>Gson</code> سریالایز و ذخیره می‌شود:</p>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span>AppPrefs.kt</span>
+                    <span>Kotlin</span>
+                </div>
+                <pre><span class="kw">object</span> <span class="dt">AppPrefs</span> {
+    <span class="kw">private const val</span> PREFS_NAME = <span class="str">"FFQPrefs"</span>
+    <span class="kw">private fun</span> <span class="fn">getPrefs</span>(context: <span class="dt">Context</span>) = context.<span class="fn">getSharedPreferences</span>(PREFS_NAME, Context.MODE_PRIVATE)
+
+    <span class="kw">fun</span> <span class="fn">getUsers</span>(context: <span class="dt">Context</span>): <span class="dt">List</span><<span class="dt">Pair</span><<span class="dt">String</span>, <span class="dt">String</span>>> {
+        <span class="kw">val</span> json = <span class="fn">getPrefs</span>(context).<span class="fn">getString</span>(<span class="str">"allowed_users"</span>, <span class="kw">null</span>)
+        <span class="kw">if</span> (json == <span class="kw">null</span>) {
+            <span class="com">// کاربر اولیه پیش‌فرض سیستم</span>
+            <span class="kw">val</span> initial = <span class="fn">listOf</span>(<span class="str">"user"</span> to <span class="str">"1234"</span>)
+            <span class="fn">saveUsers</span>(context, initial)
+            <span class="kw">return</span> initial
+        }
+        <span class="kw">val</span> type = <span class="kw">object</span> : <span class="dt">TypeToken</span><<span class="dt">List</span><<span class="dt">Pair</span><<span class="dt">String</span>, <span class="dt">String</span>>>>() {}.type
+        <span class="kw">return try</span> { <span class="dt">Gson</span>().<span class="fn">fromJson</span>(json, type) ?: <span class="fn">emptyList</span>() } <span class="kw">catch</span> (e: <span class="dt">Exception</span>) { <span class="fn">emptyList</span>() }
+    }
+
+    <span class="kw">fun</span> <span class="fn">setThemeMode</span>(context: <span class="dt">Context</span>, mode: <span class="dt">String</span>) {
+        <span class="fn">getPrefs</span>(context).<span class="fn">edit</span> { <span class="fn">putString</span>(<span class="str">"app_theme_mode"</span>, mode) }
+    }
+}</pre>
+            </div>
+        </section>
+
+        <!-- Section 4 -->
+        <section id="sec4">
+            <h2 class="section-title">۴. مدل‌های داده و فرمول‌های محاسباتی بالینی (FFQModels.kt)</h2>
+            <p>در فایل <code>FFQModels.kt</code>، چهار ساختار اصلی داده وجود دارد. نقطه قوت این بخش، استفاده از <strong>Computed Getters</strong> است؛ به این معنا که شاخص‌هایی نظیر BMI و IPAQMET هرگز در پایگاه داده کپی نمی‌شوند بلکه مستقیماً از داده‌های ثبت‌شده در حافظه محاسبه می‌شوند:</p>
+
+            <h3 class="sub-title">الف) کلاس مدل ثبت‌نام ۵۲ ستونه و فرمول‌های آن</h3>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>FFQModels.kt</span>
+                    <span>Kotlin</span>
+                </div>
+                <pre><span class="kw">data class</span> <span class="dt">RegistrationData</span>(
+    <span class="kw">val</span> id: <span class="dt">String</span> = <span class="str">""</span>,
+    <span class="kw">val</span> diagnosisMO: <span class="dt">String</span> = <span class="str">""</span>,
+    <span class="kw">val</span> marital: <span class="dt">Int</span>? = <span class="kw">null</span>,
+    <span class="kw">val</span> otherNarcotics: <span class="dt">String</span> = <span class="str">""</span>,
+    <span class="kw">val</span> ghelian: <span class="dt">String</span> = <span class="str">""</span>,
+    <span class="kw">val</span> cigar: <span class="dt">String</span> = <span class="str">""</span>,
+    <span class="kw">val</span> aspirin: <span class="dt">Int</span>? = <span class="kw">null</span>,
+    <span class="kw">val</span> levotyroxin: <span class="dt">Int</span>? = <span class="kw">null</span>,
+    <span class="kw">val</span> statin: <span class="dt">String</span> = <span class="str">""</span>,
+    <span class="kw">val</span> vitD: <span class="dt">Int</span>? = <span class="kw">null</span>,
+    <span class="kw">val</span> multivitamin: <span class="dt">Int</span>? = <span class="kw">null</span>,
+    <span class="kw">val</span> diabetes: <span class="dt">Int</span>? = <span class="kw">null</span>,
+    <span class="kw">val</span> cvd: <span class="dt">Int</span>? = <span class="kw">null</span>,
+    <span class="kw">val</span> bp: <span class="dt">Int</span>? = <span class="kw">null</span>,
+    <span class="kw">val</span> migrane: <span class="dt">Int</span>? = <span class="kw">null</span>,
+    <span class="kw">val</span> gid: <span class="dt">Int</span>? = <span class="kw">null</span>,
+    <span class="kw">val</span> cancer: <span class="dt">Int</span>? = <span class="kw">null</span>,
+    <span class="kw">val</span> weightKg: <span class="dt">String</span> = <span class="str">""</span>,
+    <span class="kw">val</span> heightCm: <span class="dt">String</span> = <span class="str">""</span>,
+    <span class="kw">val</span> gender: <span class="dt">Int</span>? = <span class="kw">null</span>,
+    <span class="kw">val</span> age: <span class="dt">String</span> = <span class="str">""</span>,
+    <span class="kw">val</span> education: <span class="dt">Int</span>? = <span class="kw">null</span>,
+    <span class="kw">val</span> job: <span class="dt">Int</span>? = <span class="kw">null</span>,
+    <span class="kw">val</span> familySize: <span class="dt">String</span> = <span class="str">""</span>,
+    <span class="kw">val</span> kids: <span class="dt">String</span> = <span class="str">""</span>,
+    <span class="kw">val</span> houseOwnership: <span class="dt">Int</span>? = <span class="kw">null</span>,
+    <span class="kw">val</span> ipaq: <span class="dt">Map</span><<span class="dt">Int</span>, <span class="dt">String</span>> = <span class="fn">emptyMap</span>(),
+    <span class="kw">val</span> timestamp: <span class="dt">Long</span> = System.<span class="fn">currentTimeMillis</span>()
+) {
+    <span class="com">// محاسبه تنبل BMI با بررسی دقیق معتبر بودن قد و وزن</span>
+    <span class="kw">val</span> bmi: <span class="dt">Double</span>? <span class="kw">get</span>() {
+        <span class="kw">val</span> w = weightKg.<span class="fn">toDoubleOrNull</span>() ?: <span class="kw">return null</span>
+        <span class="kw">val</span> h = heightCm.<span class="fn">toDoubleOrNull</span>() ?: <span class="kw">return null</span>
+        <span class="kw">if</span> (h <= <span class="num">0</span>) <span class="kw">return null</span>
+        <span class="kw">val</span> hm = h / <span class="num">100.0</span>
+        <span class="kw">return</span> w / (hm * hm)
+    }
+
+    <span class="com">// محاسبه نمره متابولیک کل IPAQMET با ۱۲ زوج سوال</span>
+    <span class="kw">val</span> ipaqMet: <span class="dt">Double</span> <span class="kw">get</span>() {
+        <span class="kw">fun</span> <span class="fn">pair</span>(p1: <span class="dt">Int</span>, p2: <span class="dt">Int</span>, factor: <span class="dt">Double</span>): <span class="dt">Double</span> {
+            <span class="kw">val</span> v1 = ipaq[p1]?.<span class="fn">toDoubleOrNull</span>() ?: <span class="num">0.0</span>
+            <span class="kw">val</span> v2 = ipaq[p2]?.<span class="fn">toDoubleOrNull</span>() ?: <span class="num">0.0</span>
+            <span class="kw">return</span> v1 * v2 * factor
+        }
+        <span class="kw">return</span> <span class="fn">pair</span>(<span class="num">2</span>, <span class="num">3</span>, <span class="num">8.0</span>) + <span class="fn">pair</span>(<span class="num">4</span>, <span class="num">5</span>, <span class="num">4.0</span>) + <span class="fn">pair</span>(<span class="num">6</span>, <span class="num">7</span>, <span class="num">3.3</span>) +
+               <span class="fn">pair</span>(<span class="num">8</span>, <span class="num">9</span>, <span class="num">0.0</span>) + <span class="fn">pair</span>(<span class="num">10</span>, <span class="num">11</span>, <span class="num">4.0</span>) + <span class="fn">pair</span>(<span class="num">12</span>, <span class="num">13</span>, <span class="num">3.3</span>) +
+               <span class="fn">pair</span>(<span class="num">14</span>, <span class="num">15</span>, <span class="num">8.0</span>) + <span class="fn">pair</span>(<span class="num">16</span>, <span class="num">17</span>, <span class="num">4.0</span>) + <span class="fn">pair</span>(<span class="num">18</span>, <span class="num">19</span>, <span class="num">3.3</span>) +
+               <span class="fn">pair</span>(<span class="num">20</span>, <span class="num">21</span>, <span class="num">3.3</span>) + <span class="fn">pair</span>(<span class="num">22</span>, <span class="num">23</span>, <span class="num">8.0</span>) + <span class="fn">pair</span>(<span class="num">24</span>, <span class="num">25</span>, <span class="num">4.0</span>)
+    }
+}</pre>
+            </div>
+
+            <div class="formula-card">
+                BMI = وزن (کیلوگرم) / (قد (متر))²
+            </div>
+
+            <h3 class="sub-title">ب) کلاس مدل پاسخ‌های خوراک و نرخ معادل مصرف روزانه</h3>
+            <p>زمانی که کاربر فرکانس مصرف را در یکی از کادرها وارد می‌کند، متد <code>toDailyMultiplier()</code> برای تبدیل نرخ مصرف به مبنای روزانه وارد عمل می‌شود:</p>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span>FFQModels.kt</span>
+                    <span>Kotlin</span>
+                </div>
+                <pre><span class="kw">data class</span> <span class="dt">FFQAnswer</span>(
+    <span class="kw">val</span> day: <span class="dt">String</span> = <span class="str">""</span>,
+    <span class="kw">val</span> week: <span class="dt">String</span> = <span class="str">""</span>,
+    <span class="kw">val</span> month: <span class="dt">String</span> = <span class="str">""</span>,
+    <span class="kw">val</span> year: <span class="dt">String</span> = <span class="str">""</span>,
+    <span class="kw">val</span> userNotes: <span class="dt">String</span> = <span class="str">""</span> <span class="com">// ملاحظات اختصاصی بیمار</span>
+) {
+    <span class="kw">fun</span> <span class="fn">isEmpty</span>(): <span class="dt">Boolean</span> = day.<span class="fn">isBlank</span>() && week.<span class="fn">isBlank</span>() && month.<span class="fn">isBlank</span>() && year.<span class="fn">isBlank</span>() && userNotes.<span class="fn">isBlank</span>()
+
+    <span class="com">// نرخ معادل دریافت روزانه</span>
+    <span class="kw">fun</span> <span class="fn">toDailyMultiplier</span>(): <span class="dt">Double</span> {
+        <span class="kw">val</span> d = day.<span class="fn">toDoubleOrNull</span>()
+        <span class="kw">if</span> (d != <span class="kw">null</span> && d > <span class="num">0</span>) <span class="kw">return</span> d
+        <span class="kw">val</span> w = week.<span class="fn">toDoubleOrNull</span>()
+        <span class="kw">if</span> (w != <span class="kw">null</span> && w > <span class="num">0</span>) <span class="kw">return</span> w / <span class="num">7.0</span>
+        <span class="kw">val</span> m = month.<span class="fn">toDoubleOrNull</span>()
+        <span class="kw">if</span> (m != <span class="kw">null</span> && m > <span class="num">0</span>) <span class="kw">return</span> m / <span class="num">30.42</span>
+        <span class="kw">val</span> y = year.<span class="fn">toDoubleOrNull</span>()
+        <span class="kw">if</span> (y != <span class="kw">null</span> && y > <span class="num">0</span>) <span class="kw">return</span> y / <span class="num">365.0</span>
+        <span class="kw">return</span> <span class="num">0.0</span>
+    }
+}</pre>
+            </div>
+        </section>
+
+        <!-- Section 5 -->
+        <section id="sec5">
+            <h2 class="section-title">۵. الگوریتم ضرب ماتریسی ۶۲ ریزمغذی</h2>
+            <p>در فایل‌های <code>PatientDetailScreen.kt</code> و <code>ExcelExporter.kt</code>، دریافت واقعی هر یک از مواد مغذی با یک الگوریتم ماتریسی با پیچیدگی زمانی خطی $O(N 	imes M)$ محاسبه می‌گردد. در این حلقه، هر ماده غذایی ابتدا به نرخ مصرف روزانه تبدیل شده، سپس در جدول فاکتورهای غذایی ضرب و در یک هش‌مپ تجمیع می‌شود:</p>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span>PatientDetailScreen.kt</span>
+                    <span>Kotlin</span>
+                </div>
+                <pre><span class="com">// محاسبه زنده ۶۲ ریزمغذی در زمان بارگذاری پرونده</span>
+<span class="kw">val</span> nutrientTotals = <span class="fn">remember</span>(currentRecord, allItems) {
+    <span class="kw">val</span> totals = <span class="fn">mutableMapOf</span><<span class="dt">String</span>, <span class="dt">Double</span>>()
+    <span class="kw">for</span> (item <span class="kw">in</span> allItems) {
+        <span class="kw">val</span> ans = answers[item.id] ?: <span class="kw">continue</span>
+        <span class="kw">val</span> mult = ans.<span class="fn">toDailyMultiplier</span>()
+        <span class="kw">if</span> (mult <= <span class="num">0</span>) <span class="kw">continue</span>
+
+        <span class="com">// ضرب در فاکتورهای جدول Nutrients Forme</span>
+        <span class="kw">for</span> ((k, v) <span class="kw">in</span> item.nutrients) {
+            totals[k] = (totals[k] ?: <span class="num">0.0</span>) + (mult * v)
+        }
+    }
+    totals
+}</pre>
+            </div>
+
+            <p>نمونه‌ای از شاخص‌های خروجی این ماتریس در جدول زیر آمده است:</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>نام شاخص تغذیه‌ای</th>
+                        <th>واحد سنجش</th>
+                        <th>نحوه محاسبه</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>انرژی کل دریافتی (kcal)</td>
+                        <td>کیلوکالری</td>
+                        <td>مجموع ضرب کالری هر سهم در نرخ روزانه</td>
+                    </tr>
+                    <tr>
+                        <td>پروتئین کل (protein)</td>
+                        <td>گرم (g)</td>
+                        <td>تجمیع پروتئین حیوانی و گیاهی</td>
+                    </tr>
+                    <tr>
+                        <td>چربی کل و اشباع (sat.fat)</td>
+                        <td>گرم (g)</td>
+                        <td>تفکیک چربی‌های ترانس، اشباع و غیر اشباع</td>
+                    </tr>
+                    <tr>
+                        <td>فیبر رژیمی (fiber,tdr)</td>
+                        <td>گرم (g)</td>
+                        <td>محاسبه از منابع غلات، میوه و سبزیجات</td>
+                    </tr>
+                    <tr>
+                        <td>املاح کلیدی (کلسیم، آهن، سدیم)</td>
+                        <td>میلی‌گرم (mg)</td>
+                        <td>ارزیابی مستقیم با مقادیر مرجع DRI</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Section 6 -->
+        <section id="sec6">
+            <h2 class="section-title">۶. پرسشنامه ۱۴۷ قلمی و سیستم همگام‌سازی فرکانس‌ها و ملاحظات</h2>
+            <p>در فایل <code>FFQQuestionnaireScreen.kt</code>، لیست ۱۴۷ ماده غذایی با استفاده از کامپوننت بهینه <code>LazyColumn</code> با تخصیص کلیدهای یکتا (<code>key = { _, item -> item.id }</code>) رندر می‌شود. این کار باعث می‌شود تنها کارت‌هایی که در دید کاربر هستند در رم نگهداری شوند.</p>
+
+            <h3 class="sub-title">منطق همگام‌سازی خودکار فرکانس‌ها (درخواست پر شدن سال و بقیه)</h3>
+            <p>وقتی کاربر فیلد سال را تغییر می‌دهد، تابع لامبدا مقادیر روز، هفته و ماه را با توابع دقیق ریاضی محاسبه و بروزرسانی می‌کند:</p>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span>FFQQuestionnaireScreen.kt</span>
+                    <span>Kotlin</span>
+                </div>
+                <pre><span class="com">// تابع فیلد سال</span>
+<span class="fn">FrequencyInput</span>(
+    label = <span class="str">"سال"</span>,
+    value = answer.year,
+    modifier = Modifier.<span class="fn">weight</span>(<span class="num">1f</span>)
+) { input ->
+    <span class="kw">if</span> (input.<span class="fn">isBlank</span>()) {
+        onAnswerChange(<span class="fn">FFQAnswer</span>(userNotes = answer.userNotes))
+    } <span class="kw">else</span> {
+        <span class="kw">val</span> y = input.<span class="fn">toDoubleOrNull</span>()
+        <span class="kw">if</span> (y != <span class="kw">null</span> && y >= <span class="num">0</span>) {
+            <span class="kw">val</span> m = <span class="fn">formatFreq</span>(y / <span class="num">12.0</span>)
+            <span class="kw">val</span> w = <span class="fn">formatFreq</span>(y / <span class="num">52.14</span>)
+            <span class="kw">val</span> d = <span class="fn">formatFreq</span>(y / <span class="num">365.0</span>)
+            onAnswerChange(
+                <span class="fn">FFQAnswer</span>(day = d, week = w, month = m, year = input, userNotes = answer.userNotes)
+            )
+        } <span class="kw">else</span> {
+            onAnswerChange(answer.<span class="fn">copy</span>(year = input))
+        }
+    }
+}</pre>
+            </div>
+
+            <h3 class="sub-title">دکمه و بخش اختصاصی افزودن ملاحظات (Notes)</h3>
+            <p>در پایین هر کارت، دکمه <code>+ افزودن ملاحظات این آیتم</code> قرار دارد که با کلیک روی آن کادر متنی برای ثبت جزئیات باز می‌شود:</p>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span>FFQQuestionnaireScreen.kt</span>
+                    <span>Kotlin</span>
+                </div>
+                <pre><span class="kw">var</span> showNotesField <span class="kw">by</span> <span class="fn">remember</span> { <span class="fn">mutableStateOf</span>(answer.userNotes.<span class="fn">isNotBlank</span>()) }
+
+<span class="fn">OutlinedButton</span>(
+    onClick = { showNotesField = !showNotesField },
+    shape = <span class="fn">RoundedCornerShape</span>(<span class="num">8.dp</span>),
+    modifier = Modifier.<span class="fn">height</span>(<span class="num">36.dp</span>)
+) {
+    <span class="fn">Icon</span>(<span class="kw">if</span> (answer.userNotes.<span class="fn">isNotBlank</span>()) Icons.Default.EditNote <span class="kw">else</span> Icons.Default.NoteAdd, <span class="kw">null</span>)
+    <span class="fn">Spacer</span>(Modifier.<span class="fn">width</span>(<span class="num">6.dp</span>))
+    <span class="fn">Text</span>(
+        <span class="kw">if</span> (answer.userNotes.<span class="fn">isNotBlank</span>()) <span class="str">"ویرایش ملاحظات"</span>
+        <span class="kw">else if</span> (item.notes.<span class="fn">isNotBlank</span>()) <span class="str">"+ ثبت ملاحظات (${item.notes.take(18)}...)"</span>
+        <span class="kw">else</span> <span class="str">"+ افزودن ملاحظات این آیتم"</span>
+    )
+}
+
+<span class="kw">if</span> (showNotesField) {
+    <span class="fn">OutlinedTextField</span>(
+        value = answer.userNotes,
+        onValueChange = { onAnswerChange(answer.<span class="fn">copy</span>(userNotes = it)) },
+        label = { <span class="fn">Text</span>(<span class="str">"ملاحظات اختصاصی بیمار برای این غذا"</span>) },
+        placeholder = { <span class="fn">Text</span>(item.notes.<span class="fn">ifBlank</span> { <span class="str">"نوع پخت، مارک یا عادات مصرف..."</span> }) },
+        modifier = Modifier.<span class="fn">fillMaxWidth</span>()
+    )
+}</pre>
+            </div>
+        </section>
+
+        <!-- Section 7 -->
+        <section id="sec7">
+            <h2 class="section-title">۷. فرم جامع ثبت‌نام ۵۲ ستونه و ۶ آکاردئون</h2>
+            <p>در فایل <code>RegistrationScreen.kt</code>، به دلیل حجم بالای ۵۲ فیلد اکسل مرجع، فرم در قالب ۶ بخش بازشونده (Accordion) سازماندهی شده است:</p>
+            <ul>
+                <li><strong>بخش ۱: مشخصات هویتی و دموگرافیک</strong> (شناسه، سن، جنسیت، وضعیت تاهل، تحصیلات، شغل، بعد خانوار، تعداد فرزندان، مسکن)</li>
+                <li><strong>بخش ۲: شاخص‌های آنتروپومتری</strong> (وزن، قد و دور کمر به همراه محاسبه زنده و تغییر رنگ خودکار کارت BMI)</li>
+                <li><strong>بخش ۳: عادات و مصرف دخانیات</strong> (سیگار، قلیان و سایر مخدرها)</li>
+                <li><strong>بخش ۴: داروها و مکمل‌های مصرفی</strong> (آسپرین، لووتیروکسین، استاتین، ویتامین دی، مولتی‌ویتامین)</li>
+                <li><strong>بخش ۵: سوابق بیماری‌های مزمن</strong> (دیابت نوع ۱ و ۲، فشار خون، بیماری‌های قلبی، میگرن، سرطان، گوارش)</li>
+                <li><strong>بخش ۶: پرسشنامه بین‌المللی فعالیت بدنی (IPAQ 2 تا 25)</strong> با رندر برداری و محاسبه زنده نمره متابولیک کل.</li>
+            </ul>
+        </section>
+
+        <!-- Section 8 -->
+        <section id="sec8">
+            <h2 class="section-title">۸. موتور بایت‌محور تولید فایل اکسل بدون وابستگی (ExcelExporter.kt)</h2>
+            <p>یکی از بزرگترین چالش‌های توسعه اپلیکیشن در پلتفرم اندروید، کتابخانه‌های سنگین تولید اکسل هستند. کتابخانه آپاچی POI حجم فایل نصبی را حدود ۲۰ مگابایت افزایش داده و با ایجاد ارور محدودیت متدها (Dex 64K Limit) باعث افت شدید سرعت می‌گردد.</p>
+            
+            <p>در فایل <code>ExcelExporter.kt</code>، کل فرآیند بر اساس معماری رسمی <strong>ECMA-376 OpenXML</strong> با استفاده از کلاس استاندارد جاوا <code>ZipOutputStream</code> در سطح استریم بایت پیاده‌سازی شده است:</p>
+
+            <h3 class="sub-title">ساختار پرونده زیپ اکسل (.xlsx):</h3>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>Excel Zip Architecture</span>
+                    <span>Structure</span>
+                </div>
+                <pre>Archive: export_file.xlsx
+ ├── [Content_Types].xml       // تعریف MIME Type شیت‌ها و استایل‌ها
+ ├── _rels/.rels               // روابط ریشه پکیج آفیس
+ ├── xl/
+ │   ├── _rels/workbook.xml.rels
+ │   ├── workbook.xml          // تعریف برگه‌ها (Sheets)
+ │   ├── styles.xml            // جدول فونت‌ها، رنگ‌های سرستون و حاشیه‌ها
+ │   └── worksheets/
+ │       ├── sheet1.xml        // برگه اول با تگ rightToLeft="1"
+ │       └── sheet2.xml        // برگه دوم با تگ rightToLeft="1"</pre>
+            </div>
+
+            <h3 class="sub-title">الگوریتم تبدیل شماره ستون به سیستم الفبایی اکسل (مبنای ۲۶)</h3>
+            <p>برای تبدیل اعداد ۱ تا ۵۲ به شناسه‌های سلولی مانند A1, Z1, AA1, AZ1:</p>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span>ExcelExporter.kt</span>
+                    <span>Kotlin</span>
+                </div>
+                <pre><span class="kw">private fun</span> <span class="fn">getColName</span>(colIdx: <span class="dt">Int</span>): <span class="dt">String</span> {
+    <span class="kw">var</span> col = colIdx
+    <span class="kw">val</span> sb = <span class="dt">StringBuilder</span>()
+    <span class="kw">while</span> (col > <span class="num">0</span>) {
+        <span class="kw">val</span> rem = (col - <span class="num">1</span>) % <span class="num">26</span>
+        sb.<span class="fn">append</span>((<span class="str">'A'</span>.code + rem).<span class="fn">toChar</span>())
+        col = (col - <span class="num">1</span>) / <span class="num">26</span>
+    }
+    <span class="kw">return</span> sb.<span class="fn">reverse</span>().<span class="fn">toString</span>()
+}</pre>
+            </div>
+
+            <h3 class="sub-title">تولید تمایز سلول‌های عددی و متنی</h3>
+            <p>اگر سلول متن باشد با تگ <code>inlineStr</code> و اگر عدد باشد با تگ <code>&lt;v&gt;</code> درج می‌شود تا نرم‌افزارهای اکسل و SPSS بتوانند روی ستون‌ها میانگین و محاسبات آماری انجام دهند:</p>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span>ExcelExporter.kt</span>
+                    <span>Kotlin</span>
+                </div>
+                <pre><span class="kw">if</span> (v <span class="kw">is</span> <span class="dt">Number</span> && !cell.isHeader) {
+    sheetSb.<span class="fn">append</span>(<span class="str">"  &lt;c r="$cellRef"$sAttr>&lt;v>$v&lt;/v>&lt;/c>\n"</span>)
+} <span class="kw">else</span> {
+    <span class="kw">val</span> text = <span class="fn">escapeXml</span>(v.<span class="fn">toString</span>())
+    sheetSb.<span class="fn">append</span>(<span class="str">"  &lt;c r="$cellRef"$sAttr t="inlineStr">&lt;is>&lt;t>$text&lt;/t>&lt;/is>&lt;/c>\n"</span>)
+}</pre>
+            </div>
+        </section>
+
+        <!-- Section 9 -->
+        <section id="sec9">
+            <h2 class="section-title">۹. انیمیشن لودینگ ویندوز XP در Jetpack Compose (SplashScreen.kt)</h2>
+            <p>در فایل <code>SplashScreen.kt</code>، نوار پیشرفت ویندوز XP به صورت کامپوننت برداری مستقل پیاده شده است. ۳ بلوک شیشه‌ای با گرادیان سبز پاستیلی به صورت پیوسته روی نوار حرکت می‌کنند:</p>
+
+            <div class="xp-mockup">
+                <div style="font-size: 1.1rem; font-weight: bold; margin-bottom: 6px;">FFQ Nutrition</div>
+                <div style="font-size: 0.85rem; color: #888;">سامانه ارزیابی بسامد خوراک</div>
+                <div class="xp-track">
+                    <div class="xp-blocks">
+                        <div class="xp-block"></div>
+                        <div class="xp-block"></div>
+                        <div class="xp-block"></div>
+                    </div>
+                </div>
+                <div style="font-size: 0.78rem; color: #555;">در حال بارگذاری داده‌های بالینی...</div>
+            </div>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span>SplashScreen.kt</span>
+                    <span>Kotlin</span>
+                </div>
+                <pre><span class="ann">@Composable</span>
+<span class="kw">fun</span> <span class="fn">WindowsXpProgressBar</span>(modifier: <span class="dt">Modifier</span> = Modifier) {
+    <span class="kw">val</span> transition = <span class="fn">rememberInfiniteTransition</span>(label = <span class="str">"xp_loader"</span>)
+    <span class="kw">val</span> animProgress <span class="kw">by</span> transition.<span class="fn">animateFloat</span>(
+        initialValue = -<span class="num">0.35f</span>,
+        targetValue = <span class="num">1.35f</span>,
+        animationSpec = <span class="fn">infiniteRepeatable</span>(
+            animation = <span class="fn">tween</span>(<span class="num">1250</span>, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = <span class="str">"xp_progress"</span>
+    )
+
+    <span class="fn">Box</span>(
+        modifier = modifier
+            .<span class="fn">width</span>(<span class="num">176.dp</span>)
+            .<span class="fn">height</span>(<span class="num">15.dp</span>)
+            .<span class="fn">clip</span>(<span class="fn">RoundedCornerShape</span>(<span class="num">3.dp</span>))
+            .<span class="fn">background</span>(Color.Black)
+            .<span class="fn">border</span>(<span class="num">1.5.dp</span>, Color(<span class="num">0xFF4A4E46</span>), <span class="fn">RoundedCornerShape</span>(<span class="num">3.dp</span>))
+            .<span class="fn">clipToBounds</span>()
+    ) {
+        <span class="fn">BoxWithConstraints</span>(modifier = Modifier.<span class="fn">fillMaxSize</span>()) {
+            <span class="kw">val</span> totalWidthPx = constraints.maxWidth.<span class="fn">toFloat</span>()
+            <span class="kw">val</span> xOffset = animProgress * totalWidthPx
+
+            <span class="fn">Row</span>(
+                modifier = Modifier
+                    .<span class="fn">offset</span> { <span class="dt">IntOffset</span>(xOffset.<span class="fn">toInt</span>(), <span class="num">0</span>) }
+                    .<span class="fn">align</span>(Alignment.CenterStart),
+                horizontalArrangement = Arrangement.<span class="fn">spacedBy</span>(<span class="num">2.5.dp</span>)
+            ) {
+                <span class="fn">repeat</span>(<span class="num">3</span>) {
+                    <span class="fn">Box</span>(
+                        modifier = Modifier
+                            .<span class="fn">width</span>(<span class="num">9.dp</span>)
+                            .<span class="fn">height</span>(<span class="num">11.dp</span>)
+                            .<span class="fn">clip</span>(<span class="fn">RoundedCornerShape</span>(<span class="num">2.dp</span>))
+                            .<span class="fn">background</span>(
+                                Brush.<span class="fn">verticalGradient</span>(
+                                    <span class="fn">listOf</span>(Color(<span class="num">0xFFB4F285</span>), Color(<span class="num">0xFF5E9434</span>), Color(<span class="num">0xFF285012</span>))
+                                )
+                            )
+                            .<span class="fn">border</span>(<span class="num">0.5.dp</span>, Color.White.<span class="fn">copy</span>(alpha = <span class="num">0.45f</span>), <span class="fn">RoundedCornerShape</span>(<span class="num">2.dp</span>))
+                    )
+                }
+            }
+        }
+    }
+}</pre>
+            </div>
+        </section>
+
+        <!-- Section 10 -->
+        <section id="sec10">
+            <h2 class="section-title">۱۰. لایه مخزن داده‌ها و مدیریت فایل‌ها (FFQRepository.kt)</h2>
+            <p>در فایل <code>FFQRepository.kt</code>، بارگذاری دیتابیس اقلام خوراکی با سیستم <strong>کش در حافظه (In-Memory Cache)</strong> انجام می‌شود. این فرآیند باعث می‌شود فایل ۲۶۰ کیلوبایتی دیتابیس تنها یک‌بار در رم بارگذاری شود و باز کردن فرم هیچ لگی نداشته باشد:</p>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span>FFQRepository.kt</span>
+                    <span>Kotlin</span>
+                </div>
+                <pre><span class="kw">object</span> <span class="dt">FFQRepository</span> {
+    <span class="kw">private var</span> cachedItems: <span class="dt">List</span><<span class="dt">FFQItem</span>>? = <span class="kw">null</span>
+
+    <span class="kw">fun</span> <span class="fn">loadFFQItems</span>(context: <span class="dt">Context</span>): <span class="dt">List</span><<span class="dt">FFQItem</span>> {
+        cachedItems?.<span class="kw">let</span> { <span class="kw">return</span> it }
+        <span class="kw">return try</span> {
+            <span class="kw">val</span> jsonString = context.assets.<span class="fn">open</span>(<span class="str">"ffq_database.json"</span>).<span class="fn">bufferedReader</span>().<span class="fn">use</span> { it.<span class="fn">readText</span>() }
+            <span class="kw">val</span> type = <span class="kw">object</span> : <span class="dt">TypeToken</span><<span class="dt">List</span><<span class="dt">Map</span><<span class="dt">String</span>, <span class="dt">Any</span>>>>() {}.type
+            <span class="kw">val</span> rawList: <span class="dt">List</span><<span class="dt">Map</span><<span class="dt">String</span>, <span class="dt">Any</span>>> = <span class="dt">Gson</span>().<span class="fn">fromJson</span>(jsonString, type)
+            <span class="kw">val</span> list = rawList.<span class="fn">map</span> { m ->
+                <span class="com">// پارس کردن ایمن شناسه‌ها، اسامی و مپ مقادیر ریزمغذی</span>
+                <span class="fn">FFQItem</span>(...)
+            }.<span class="fn">sortedBy</span> { it.id }
+            cachedItems = list
+            list
+        } <span class="kw">catch</span> (e: <span class="dt">Exception</span>) { <span class="fn">emptyList</span>() }
+    }
+}</pre>
+            </div>
+        </section>
+
+        <!-- Section 11 -->
+        <section id="sec11">
+            <h2 class="section-title">۱۱. پالت رنگی سبز پاستیلی و سیستم طراحی متریال ۳</h2>
+            <p>در فایل‌های <code>Color.kt</code> و <code>Theme.kt</code>، رنگ‌های اصلی پالت از روی تصویر لوگوی رسمی استخراج و در متغیرهای پالت تزریق شده‌اند:</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>نام متغیر کامپوز</th>
+                        <th>کد هگزادسیمال</th>
+                        <th>منشأ رنگ و کاربرد در UI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>PastelGreenPrimary</code></td>
+                        <td><span style="color:#5E9434; font-weight:bold;">#5E9434</span></td>
+                        <td>رنگ سبز سیب و قلم لوگو؛ کلیدهای اصلی، سرستون‌ها</td>
+                    </tr>
+                    <tr>
+                        <td><code>PastelGreenContainer</code></td>
+                        <td><span style="color:#88A070; font-weight:bold;">#E4F3DA</span></td>
+                        <td>سبز پاستیلی بسیار ملایم؛ کارت‌های فرم، بخش‌های فعال</td>
+                    </tr>
+                    <tr>
+                        <td><code>LightBackground</code></td>
+                        <td><span style="color:#808060; font-weight:bold;">#FAF9F3</span></td>
+                        <td>رنگ عاجی روشن هماهنگ با پس‌زمینه عکس لوگو (#FEFAEE)</td>
+                    </tr>
+                    <tr>
+                        <td><code>PastelSageSecondary</code></td>
+                        <td><span style="color:#5A754E; font-weight:bold;">#5A754E</span></td>
+                        <td>سبز مریم‌گلی؛ دکمه بخش سوابق در منوی اصلی</td>
+                    </tr>
+                    <tr>
+                        <td><code>PastelMintTertiary</code></td>
+                        <td><span style="color:#3D6E63; font-weight:bold;">#3D6E63</span></td>
+                        <td>نعنایی ملایم؛ دکمه تماس با ما و برچسب‌های متنی</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <footer>
+            <div>مستندات رسمی مهندسی سیستم جامع FFQ Nutrition</div>
+            <div style="margin-top: 6px; font-size: 0.8rem;">توسعه‌یافته بر اساس استانداردهای بین‌المللی تغذیه و دستورالعمل‌های رسمی توسعه اندروید گوگل</div>
+        </footer>
+    </main>
+</div>
+
+</body>
+</html>

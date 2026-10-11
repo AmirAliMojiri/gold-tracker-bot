@@ -1,0 +1,50 @@
+package com.users.ffq_app.data.model
+
+import androidx.compose.runtime.staticCompositionLocalOf
+
+data class AppStrings(
+    val appName: String = "پرسشنامه بسامد خوراک (FFQ)",
+    val loginTitle: String = "ورود به سامانه",
+    val username: String = "نام کاربری",
+    val password: String = "رمز عبور",
+    val enter: String = "ورود",
+    val invalidCreds: String = "نام کاربری یا رمز عبور اشتباه است",
+    val pleaseSetUsers: String = "حسابی تعریف نشده است. با حساب مدیر وارد شوید.",
+    val mainMenu: String = "منوی اصلی",
+    val btnRegistration: String = "ثبت‌نام و مشخصات بیمار",
+    val btnFFQ: String = "پرسشنامه بسامد خوراک (FFQ)",
+    val btnHistory: String = "تاریخچه و پرونده بیماران",
+    val btnSettings: String = "تنظیمات",
+    val btnContactUs: String = "ارتباط با ما",
+    val exitApp: String = "خروج از برنامه",
+    val logout: String = "خروج از حساب",
+    val adminLoginTitle: String = "ورود به بخش مدیریت",
+    val adminUser: String = "نام کاربری مدیر",
+    val adminPass: String = "رمز عبور مدیر",
+    val enterDashboard: String = "ورود به پنل مدیریت",
+    val wrongAdminInfo: String = "اطلاعات مدیر نادرست است",
+    val adminDashboard: String = "مدیریت حساب‌های کاربری",
+    val staffManagement: String = "مدیریت و افزودن حساب کاربر",
+    val newUserLabel: String = "نام کاربری جدید",
+    val newPassLabel: String = "رمز عبور جدید",
+    val addStaff: String = "افزودن کاربر",
+    val edit: String = "ویرایش",
+    val delete: String = "حذف",
+    val save: String = "ذخیره",
+    val cancel: String = "انصراف",
+    val back: String = "بازگشت",
+    val next: String = "مرحله بعد",
+    val prev: String = "مرحله قبل",
+    val yes: String = "بله",
+    val no: String = "خیر",
+    val deleteSelected: String = "حذف موارد انتخابی",
+    val deleteConfirm: String = "آیا از حذف این پرونده‌ها اطمینان دارید؟",
+    val noRecords: String = "هیچ رکوردی یافت نشد.",
+    val fillAllFields: String = "لطفاً شناسه و اطلاعات لازم را وارد کنید.",
+    val successSaved: String = "اطلاعات با موفقیت ذخیره شد.",
+    val pressBackAgain: String = "برای خروج دوباره دکمه بازگشت را بزنید",
+    val needHelp: String = "نیاز به پشتیبانی دارید؟",
+    val contactDesc: String = "در صورت بروز هرگونه مشکل یا سوال با ما در ارتباط باشید."
+)
+
+val LocalAppStrings = staticCompositionLocalOf { AppStrings() }
