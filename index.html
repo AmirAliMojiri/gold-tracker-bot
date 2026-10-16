@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>طلاهام (Talaham) | داشبورد هوشمند بازار طلا، سکه، نقره و سبد دارایی</title>
+  <meta name="description" content="سامانه جامع رصد زنده نرخ‌ها، سقف و کف روزانه، مدیریت سبد دارایی، سناریوساز قیمت و تحلیل اقتصاد کلان" />
+  <link rel="stylesheet" href="/styles.css" />
+  <!-- Chart.js for smooth interactive charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">
+          <span></span>
+        </div>
+        <div>
+          <b>طلاهام</b>
+          <small>دید روشن به بازار و سبد دارایی</small>
+        </div>
+        <button class="icon-btn sidebar-close" id="sidebarCloseBtn" aria-label="بستن منو">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+        </button>
+      </div>
+
+      <nav class="main-nav" aria-label="ناوبری اصلی">
+        <span class="nav-title">داشبورد و بازار</span>
+        <a class="nav-item active" href="#overview">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg>
+          <span>نمای کلی بازار</span>
+        </a>
+        <a class="nav-item" href="#chart">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"></path></svg>
+          <span>نمودار و روند</span>
+        </a>
+        <a class="nav-item" href="#market-board">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M3 9h18"></path><path d="M9 21V9"></path></svg>
+          <span>تابلوی جامع و سقف/کف</span>
+          <span class="badge" id="boardCountBadge">۳۵ نرخ</span>
+        </a>
+
+        <span class="nav-title">ابزارهای پورتفولیو</span>
+        <a class="nav-item" href="#portfolio">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h3.75a2 2 0 0 1 1.6.8l.45.6a4 4 0 0 0 6.4 0l.45-.6a2 2 0 0 1 1.6-.8H21"></path><path d="M3 7h18"></path><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>
+          <span>دارایی و سبد من</span>
+          <span class="badge" id="portfolioCountBadge">۰ دارایی</span>
+        </a>
+        <a class="nav-item" href="#advisor">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"></path><path d="m4.93 4.93 2.83 2.83"></path><path d="M2 12h4"></path><path d="m4.93 19.07 2.83-2.83"></path><path d="M12 22v-4"></path><path d="m19.07 19.07-2.83-2.83"></path><path d="M22 12h-4"></path><path d="m19.07 4.93-2.83 2.83"></path></svg>
+          <span>مشاور تخصصی خرید</span>
+        </a>
+        <a class="nav-item" href="#scenario">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5H3"></path><path d="M12 19H3"></path><path d="M14 3v4"></path><path d="M16 17v4"></path><path d="M21 12h-9"></path><path d="M21 19h-5"></path><path d="M21 5h-7"></path><path d="M8 10v4"></path><path d="M8 12H3"></path></svg>
+          <span>سناریوساز قیمت</span>
+        </a>
+        <a class="nav-item" href="#calculator">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"></rect><line x1="8" x2="16" y1="6" y2="6"></line><line x1="16" x2="16" y1="14" y2="18"></line><path d="M16 10h.01"></path><path d="M12 10h.01"></path><path d="M8 10h.01"></path><path d="M12 14h.01"></path><path d="M8 14h.01"></path><path d="M12 18h.01"></path><path d="M8 18h.01"></path></svg>
+          <span>محاسبه‌گر بازده و تبدیل</span>
+        </a>
+        <a class="nav-item" href="#alerts">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"></path><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"></path></svg>
+          <span>هشدارهای قیمت</span>
+        </a>
+        <a class="nav-item" href="#sources">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"></path><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"></path></svg>
+          <span>منابع و روش داده</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-watch" id="quickAlertBtn">
+        <div class="watch-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.268 21a2 2 0 0 0 3.464 0"></path><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"></path></svg>
+        </div>
+        <div>
+          <b>هشدار هوشمند</b>
+          <small id="activeAlertsCountText">تنظیم تارگت قیمتی</small>
+        </div>
+      </div>
+
+      <div class="sidebar-foot">
+        <div class="status-dot" id="serverStatusDot"></div>
+        <div>
+          <b>داده‌های زنده TGJU</b>
+          <small id="lastSyncTimeText">آخرین استعلام: لحظاتی پیش</small>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Sidebar Backdrop Overlay (Mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Workspace Area -->
+    <section class="workspace">
+      <!-- Topbar -->
+      <header class="topbar">
+        <div class="topbar-right">
+          <button class="icon-btn mobile-menu" id="mobileMenuBtn" aria-label="باز کردن منو">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path></svg>
+          </button>
+          <div>
+            <h1>نبض بازار طلا و دارایی‌ها</h1>
+            <p>رصد هم‌زمان بازار طلا، نقره، مسکوکات، ارز و مدیریت پرتفوی</p>
+          </div>
+        </div>
+
+        <div class="topbar-actions">
+          <button type="button" class="update-pill" id="refreshBtn" title="بروزرسانی داده‌ها">
+            <span class="live-dot"></span>
+            <span id="updateStatusText">زنده (TGJU)</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>
+          </button>
+          <button class="icon-btn" id="themeToggleBtn" aria-label="تغییر تم">
+            <svg id="themeIconMoon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"></path></svg>
+            <svg id="themeIconSun" style="display:none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+          </button>
+          <button class="export-btn" id="exportDataBtn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg>
+            خروجی داده
+          </button>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <div class="content">
+        <!-- 1. OVERVIEW -->
+        <section id="overview" class="section-block">
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">نمای لحظه‌ای</span>
+              <h2>بازار در یک نگاه</h2>
+            </div>
+            <div class="market-open">
+              <span></span> به‌روزرسانی خودکار هر ۶۰ ثانیه
+            </div>
+          </div>
+
+          <div class="summary-grid">
+            <!-- Global Gold Ounce -->
+            <article class="summary-card">
+              <div class="summary-head">
+                <div class="summary-icon blue">
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
+                </div>
+                <span class="symbol">XAU</span>
+              </div>
+              <div class="summary-label">اونس جهانی طلا</div>
+              <div class="summary-value" id="cardOunceVal">-- <small>/ اونس</small></div>
+              <div class="summary-foot">
+                <span class="change positive compact" id="cardOunceChg">+۰.۰٪</span>
+                <span class="range-mini" id="cardOunceRange">کف/سقف: --</span>
+              </div>
+            </article>
+
+            <!-- 18K Gold -->
+            <article class="summary-card">
+              <div class="summary-head">
+                <div class="summary-icon gold">
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 18V6"></path></svg>
+                </div>
+                <span class="symbol">IR18</span>
+              </div>
+              <div class="summary-label">طلای ۱۸ عیار</div>
+              <div class="summary-value" id="cardGold18Val">-- <small>تومان</small></div>
+              <div class="summary-foot">
+                <span class="change positive compact" id="cardGold18Chg">+۰.۰٪</span>
+                <span class="range-mini" id="cardGold18Range">کف/سقف: --</span>
+              </div>
+            </article>
+
+            <!-- USD -->
+            <article class="summary-card">
+              <div class="summary-head">
+                <div class="summary-icon violet">
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11h3.75a2 2 0 0 1 1.6.8l.45.6a4 4 0 0 0 6.4 0l.45-.6a2 2 0 0 1 1.6-.8H21"></path><path d="M3 7h18"></path><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>
+                </div>
+                <span class="symbol">USD</span>
+              </div>
+              <div class="summary-label">دلار بازار آزاد</div>
+              <div class="summary-value" id="cardUsdVal">-- <small>تومان</small></div>
+              <div class="summary-foot">
+                <span class="change positive compact" id="cardUsdChg">+۰.۰٪</span>
+                <span class="range-mini" id="cardUsdRange">کف/سقف: --</span>
+              </div>
+            </article>
+
+            <!-- Tether USDT -->
+            <article class="summary-card">
+              <div class="summary-head">
+                <div class="summary-icon green">
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                </div>
+                <span class="symbol">USDT</span>
+              </div>
+              <div class="summary-label">تتر (USDT) دیجیتال</div>
+              <div class="summary-value" id="cardUsdtVal">-- <small>تومان</small></div>
+              <div class="summary-foot">
+                <span class="change positive compact" id="cardUsdtChg">+۰.۰٪</span>
+                <span class="range-mini" id="cardUsdtRange">کف/سقف: --</span>
+              </div>
+            </article>
+
+            <!-- Silver 999 -->
+            <article class="summary-card">
+              <div class="summary-head">
+                <div class="summary-icon blue">
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                </div>
+                <span class="symbol">AG999</span>
+              </div>
+              <div class="summary-label">گرم نقره ۹۹۹ (شمش/ساچمه)</div>
+              <div class="summary-value" id="cardSilverVal">-- <small>تومان</small></div>
+              <div class="summary-foot">
+                <span class="change positive compact" id="cardSilverChg">+۰.۰٪</span>
+                <span class="range-mini" id="cardSilverRange">کف/سقف: --</span>
+              </div>
+            </article>
+
+            <!-- Emami Coin & Bubble -->
+            <article class="summary-card">
+              <div class="summary-head">
+                <div class="summary-icon teal">
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v12"></path><path d="M8 12h8"></path></svg>
+                </div>
+                <span class="symbol">PRM</span>
+              </div>
+              <div class="summary-label">سکه امامی و حباب</div>
+              <div class="summary-value" id="cardCoinVal">-- <small>تومان</small></div>
+              <div class="summary-foot">
+                <span class="change negative compact" id="cardBubblePct">حباب: --٪</span>
+                <span id="cardBubbleVal">مقدار حباب: --</span>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- 2. INTERACTIVE CHART -->
+        <section id="chart" class="panel chart-panel">
+          <div class="panel-head chart-head">
+            <div>
+              <div class="panel-kicker">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="m19 9-5 5-4-4-3 3"></path></svg>
+                تحلیل روند تکنیکال
+              </div>
+              <h2 id="chartAssetTitle">طلای ۱۸ عیار</h2>
+              <div class="price-line">
+                <strong id="chartCurrentPriceText">-- <small>تومان</small></strong>
+                <span class="change positive" id="chartPeriodChangeBadge">+۰.۰٪</span>
+                <span id="chartPeriodLabel">در ۶ ماه اخیر</span>
+              </div>
+            </div>
+
+            <div class="chart-head-actions">
+              <div class="select-wrap">
+                <select id="chartAssetSelect" aria-label="انتخاب بازار">
+                  <option value="iran" selected>طلای ۱۸ عیار</option>
+                  <option value="global">اونس جهانی طلا</option>
+                  <option value="usd">دلار بازار آزاد</option>
+                  <option value="silver">نقره ۹۹۹ خالص</option>
+                </select>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"></path></svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-toolbar">
+            <div class="segmented" id="chartTypeGroup">
+              <button class="active" data-type="area">ناحیه‌ای</button>
+              <button data-type="line">خطی</button>
+              <button data-type="bar">میله‌ای (کندل)</button>
+            </div>
+            <div class="segmented" id="chartPeriodGroup">
+              <button data-period="1M">۱ ماه</button>
+              <button data-period="3M">۳ ماه</button>
+              <button class="active" data-period="6M">۶ ماه</button>
+              <button data-period="1Y">۱ سال</button>
+            </div>
+          </div>
+
+          <div class="chart-wrap">
+            <canvas id="mainChart"></canvas>
+          </div>
+
+          <div class="stats-row">
+            <div class="mini-stat">
+              <span>بیشترین قیمت دوره</span>
+              <strong id="statHighPrice">--</strong>
+            </div>
+            <div class="mini-stat">
+              <span>کمترین قیمت دوره</span>
+              <strong id="statLowPrice">--</strong>
+            </div>
+            <div class="mini-stat">
+              <span>میانگین دوره</span>
+              <strong id="statAvgPrice">--</strong>
+            </div>
+            <div class="mini-stat">
+              <span>فاصله از SMA20</span>
+              <strong id="statSma20">--</strong>
+              <small id="statSma50">نمای ۵۰ روزه: --</small>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. LIVE MARKET RATES & DAILY HIGH/LOW BOARD -->
+        <section id="market-board" class="panel market-board-panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-kicker">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M3 9h18"></path><path d="M9 21V9"></path></svg>
+                دامنه نوسان و تابلوی نرخ‌ها (TGJU)
+              </div>
+              <h2>تابلوی قیمت‌های زنده و سقف / کف روزانه</h2>
+              <p style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">
+                قیمت لحظه‌ای، بالاترین و پایین‌ترین نرخ ثبت‌شده امروز، میزان تغییر و زمان نوسان
+              </p>
+            </div>
+          </div>
+
+          <div class="board-filters">
+            <div class="filter-pills" id="boardCategoryPills">
+              <button class="filter-pill active" data-cat="all">همه بازارها</button>
+              <button class="filter-pill" data-cat="gold">✨ طلا و آبشده</button>
+              <button class="filter-pill" data-cat="silver">⚪️ انواع نقره</button>
+              <button class="filter-pill" data-cat="coins_new">🪙 سکه طرح جدید</button>
+              <button class="filter-pill" data-cat="coins_old">🏛 سکه طرح قدیم</button>
+              <button class="filter-pill" data-cat="parsian">🎖 سکه پارسیان</button>
+              <button class="filter-pill" data-cat="currencies">💵 ارزها و تتر</button>
+              <button class="filter-pill" data-cat="bubbles">🎈 رادار حباب سکه</button>
+            </div>
+
+            <div class="search-box">
+              <input type="text" id="boardSearchInput" placeholder="جستجوی سریع دارایی..." />
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table" id="marketDataTable">
+              <thead>
+                <tr>
+                  <th>نام دارایی</th>
+                  <th>دسته‌بندی</th>
+                  <th>قیمت لحظه‌ای (تومان)</th>
+                  <th>کمترین (کف روز)</th>
+                  <th>دامنه نوسان روز</th>
+                  <th>بیشترین (سقف روز)</th>
+                  <th>تغییر امروز</th>
+                  <th>ساعت نوسان</th>
+                </tr>
+              </thead>
+              <tbody id="marketTableBody">
+                <!-- Populated dynamically via JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 4. PERSONAL PORTFOLIO TRACKER -->
+        <section id="portfolio" class="panel portfolio-panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-kicker">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11h3.75a2 2 0 0 1 1.6.8l.45.6a4 4 0 0 0 6.4 0l.45-.6a2 2 0 0 1 1.6-.8H21"></path><path d="M3 7h18"></path><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>
+                مدیریت هوشمند دارایی
+              </div>
+              <h2>سبد دارایی من (پرتفوی ذخیره‌شده)</h2>
+              <p style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">
+                ثبت طلا، نقره، سکه‌ها و ارزها — محاسبه خودکار ارزش لحظه‌ای بر اساس نرخ زنده و محاسبه دقیق سود/زیان
+              </p>
+            </div>
+            <button class="btn-primary" id="openAddHoldingModalBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+              ثبت دارایی جدید
+            </button>
+          </div>
+
+          <div class="portfolio-overview">
+            <div class="portfolio-card primary">
+              <span>ارزش روز کل سبد دارایی</span>
+              <strong id="portTotalCurrentVal">۰ تومان</strong>
+            </div>
+            <div class="portfolio-card">
+              <span>سرمایه اولیه خرید</span>
+              <strong id="portTotalInvestedVal">۰ تومان</strong>
+            </div>
+            <div class="portfolio-card">
+              <span>سود / زیان کل ریالی</span>
+              <strong id="portTotalPnlVal">۰ تومان</strong>
+            </div>
+            <div class="portfolio-card">
+              <span>بازدهی درصدی کل</span>
+              <strong id="portTotalPnlPct">۰.۰٪</strong>
+            </div>
+          </div>
+
+          <div class="portfolio-actions">
+            <div style="display:flex; gap:8px;">
+              <button class="btn-secondary" id="backupPortfolioBtn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg>
+                پشتیبان‌گیری (JSON)
+              </button>
+              <button class="btn-secondary" id="restorePortfolioBtn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" x2="12" y1="3" y2="15"></line></svg>
+                بازیابی سبد
+              </button>
+              <input type="file" id="restoreFileInput" style="display:none;" accept=".json" />
+            </div>
+            <button class="btn-secondary btn-danger" id="clearPortfolioBtn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+              پاک‌سازی سبد
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table" id="portfolioTable">
+              <thead>
+                <tr>
+                  <th>دارایی</th>
+                  <th>مقدار / وزن</th>
+                  <th>میانگین قیمت خرید</th>
+                  <th>قیمت روز واحد</th>
+                  <th>ارزش روز کل</th>
+                  <th>سود / زیان</th>
+                  <th>عملیات</th>
+                </tr>
+              </thead>
+              <tbody id="portfolioTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 5. SMART QUANTITATIVE ADVISOR -->
+        <section id="advisor" class="panel advisor-panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-kicker">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4"></path><path d="m4.93 4.93 2.83 2.83"></path><path d="M2 12h4"></path><path d="m4.93 19.07 2.83-2.83"></path><path d="M12 22v-4"></path><path d="m19.07 19.07-2.83-2.83"></path><path d="M22 12h-4"></path><path d="m19.07 4.93-2.83 2.83"></path></svg>
+                مشاور کوانتومتریک و سبدگردانی
+              </div>
+              <h2>مشاور هوشمند تخصیص سرمایه (Macro & DCA)</h2>
+              <p style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">
+                تحلیل اقتصاد کلان، نسبت طلا به نقره (GSR)، ماتریس وزن‌دهی بهینه سبد و استراتژی ورود ۳ پله‌ای
+              </p>
+            </div>
+          </div>
+
+          <div class="advisor-budget-box">
+            <span style="font-size:0.9rem; font-weight:700;">بودجه سرمایه‌گذاری خود را تعیین کنید:</span>
+            <div class="budget-chips" id="advisorBudgetChips">
+              <button class="budget-chip" data-budget="5000000">۵ میلیون</button>
+              <button class="budget-chip" data-budget="10000000">۱۰ میلیون</button>
+              <button class="budget-chip" data-budget="20000000">۲۰ میلیون</button>
+              <button class="budget-chip active" data-budget="50000000">۵۰ میلیون</button>
+              <button class="budget-chip" data-budget="100000000">۱۰۰ میلیون</button>
+            </div>
+            <div class="budget-input-wrap">
+              <input type="number" id="advisorCustomBudgetInput" value="50000000" min="500000" step="500000" />
+              <button class="btn-primary" id="advisorCalculateBtn">محاسبه استراتژی سبد</button>
+            </div>
+          </div>
+
+          <!-- Macro Indicators Row -->
+          <div class="macro-badges-row">
+            <div class="macro-badge">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v12"></path></svg>
+              <div>
+                <b>نسبت طلا به نقره (GSR): <span id="advisorGsrVal">--</span></b>
+                <small id="advisorGsrNote">ارزندگی آماری و پتانسیل اهرمی نقره</small>
+              </div>
+            </div>
+            <div class="macro-badge">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path></svg>
+              <div>
+                <b>حباب سکه امامی: <span id="advisorBubbleVal">--٪</span></b>
+                <small id="advisorBubbleNote">ارزش ذاتی در برابر قیمت بازار</small>
+              </div>
+            </div>
+            <div class="macro-badge">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="m10 15 5-3-5-3v6Z"></path></svg>
+              <div>
+                <b>انس طلا: <span id="advisorGoldOunceVal">--</span></b>
+                <small>انس جهانی نقره: <span id="advisorSilverOunceVal">--</span></small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Allocation Matrix -->
+          <div>
+            <h3 style="font-size:1.15rem; font-weight:800; margin-bottom:12px;">🎯 ماتریس تخصیص بهینه دارایی (Asset Allocation Matrix)</h3>
+            <div class="allocation-cards" id="advisorAllocCards">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- DCA Tranches -->
+          <div class="dca-tranches-box">
+            <h3 style="font-size:1.15rem; font-weight:800; margin-bottom:12px;">📈 استراتژی ورود پله‌ای (DCA Execution Plan)</h3>
+            <div id="advisorDcaContainer">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 6. SCENARIO BUILDER -->
+        <section id="scenario" class="panel scenario-panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-kicker">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 5H3"></path><path d="M12 19H3"></path><path d="M14 3v4"></path><path d="M16 17v4"></path><path d="M21 12h-9"></path><path d="M21 19h-5"></path><path d="M21 5h-7"></path><path d="M8 10v4"></path><path d="M8 12H3"></path></svg>
+                سناریوساز تعاملی
+              </div>
+              <h2>اگر شرایط بازار تغییر کند...</h2>
+              <p style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">
+                اثر هم‌زمان تغییر انس جهانی، نرخ ارز دلار و حباب بازار داخلی را بسنجید.
+              </p>
+            </div>
+            <div class="scenario-result">
+              <span>قیمت برآوردی هر گرم طلای ۱۸ عیار</span>
+              <strong id="scenarioEstimatedPrice">-- <small>تومان</small></strong>
+              <span class="change positive" id="scenarioChangePct">+۰.۰٪</span>
+            </div>
+          </div>
+
+          <div class="scenario-grid">
+            <label class="range-field">
+              <div>
+                <span>تغییر اونس جهانی طلا</span>
+                <output class="positive" id="scenarioOunceOut">+۰٪</output>
+              </div>
+              <input type="range" id="scenarioOunceSlider" min="-20" max="25" step="1" value="0" />
+              <small><span>۲۰٪-</span><span>۲۵٪+</span></small>
+            </label>
+
+            <label class="range-field">
+              <div>
+                <span>تغییر نرخ دلار آزاد</span>
+                <output class="positive" id="scenarioUsdOut">+۰٪</output>
+              </div>
+              <input type="range" id="scenarioUsdSlider" min="-20" max="40" step="1" value="0" />
+              <small><span>۲۰٪-</span><span>۴۰٪+</span></small>
+            </label>
+
+            <label class="range-field">
+              <div>
+                <span>حباب بازار داخلی</span>
+                <output class="positive" id="scenarioBubbleOut">+۰٪</output>
+              </div>
+              <input type="range" id="scenarioBubbleSlider" min="-8" max="15" step="1" value="0" />
+              <small><span>۸٪-</span><span>۱۵٪+</span></small>
+            </label>
+          </div>
+
+          <div class="formula-strip">
+            <div>
+              <span>اونس سناریو</span>
+              <b id="scenarioFormulaOunce">$۰</b>
+            </div>
+            <span class="formula-sign">×</span>
+            <div>
+              <span>دلار سناریو</span>
+              <b id="scenarioFormulaUsd">۰ تومان</b>
+            </div>
+            <span class="formula-sign">÷</span>
+            <div>
+              <span>تبدیل عیار و وزن</span>
+              <b>۰.۷۵ / ۳۱.۱۰۳۵</b>
+            </div>
+            <span class="formula-sign">=</span>
+            <div class="formula-total">
+              <span>برآورد هر گرم طلا ۱۸</span>
+              <b id="scenarioFormulaTotal">۰ تومان</b>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7. MULTI-LAYER DESCRIPTIVE ANALYSIS -->
+        <div class="two-column" id="analysis">
+          <section class="panel analysis-panel">
+            <div class="panel-head compact-head">
+              <div>
+                <div class="panel-kicker">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+                  تحلیل توصیفی چندلایه
+                </div>
+                <h2>برداشت داده‌محور از وضعیت مارکت</h2>
+                <p style="color:var(--text-muted); font-size:0.85rem; margin-top:2px;">
+                  محاسبه شده بر مبنای ۵ پارامتر شفاف تکنیکال و کلان؛ بدون توصیه خرید یا فروش
+                </p>
+              </div>
+              <div class="score-ring">
+                <span id="analysisScoreVal">۶۰</span>
+                <small>امتیاز وضعیت</small>
+              </div>
+            </div>
+
+            <div class="analysis-summary-strip">
+              <div class="descriptive-badge positive" id="analysisSentimentBadge">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7h6v6"></path><path d="m22 7-8.5 8.5-5-5L2 17"></path></svg>
+                <span id="analysisSentimentText">تمایل صعودی ملایم</span>
+              </div>
+              <span>امتیاز از شرایط SMA20، SMA50، بازدهی مثبت و جایگاه در دامنه استخراج شده است.</span>
+            </div>
+
+            <div class="analysis-tabs" id="analysisTabsGroup">
+              <button class="active" data-tab="trend">روند (Trend)</button>
+              <button data-tab="momentum">شتاب (Momentum)</button>
+              <button data-tab="drivers">محرک‌ها (Drivers)</button>
+              <button data-tab="risk">مدیریت ریسک</button>
+            </div>
+
+            <div class="analysis-body" id="analysisTabContent">
+              <div class="analysis-metric-grid">
+                <div class="analysis-metric">
+                  <span>فاصله از SMA20</span>
+                  <strong id="metricSma20Dist">+۳.۸٪</strong>
+                  <small>بالاتر از میانگین ۲۰ روزه</small>
+                </div>
+                <div class="analysis-metric">
+                  <span>فاصله از SMA50</span>
+                  <strong id="metricSma50Dist">+۸.۹٪</strong>
+                  <small>نمای بلندمدت‌تر روند</small>
+                </div>
+                <div class="analysis-metric">
+                  <span>جایگاه در دامنه ۲۰ روزه</span>
+                  <strong id="metricRangePos">۸۵٪</strong>
+                  <small>۰٪ کف و ۱۰۰٪ سقف</small>
+                </div>
+                <div class="analysis-metric">
+                  <span>کف مرجع ۲۰ روزه</span>
+                  <strong id="metricRefLow">--</strong>
+                  <small>سطح حمایتی مشاهده‌شده</small>
+                </div>
+                <div class="analysis-metric">
+                  <span>سقف مرجع ۲۰ روزه</span>
+                  <strong id="metricRefHigh">--</strong>
+                  <small>سطح مقاومتی ثبت‌شده</small>
+                </div>
+              </div>
+
+              <div class="analysis-insight-cards">
+                <article>
+                  <span>۱</span>
+                  <p>هم‌حرکتی روزانه طلا با اونس جهانی و دلار آزاد؛ هیچ محرک واحدی به تنهایی تعیین‌کننده نیست.</p>
+                </article>
+                <article>
+                  <span>۲</span>
+                  <p>در سطوح بالای نسبت GSR، نقره شتاب حرکتی (Beta) بالاتری نسبت به طلا در روندهای صعودی نشان می‌دهد.</p>
+                </article>
+                <article>
+                  <span>۳</span>
+                  <p>حباب سکه در موج‌های هیجانی می‌تواند به سرعت منبسط یا تخلیه شود؛ آبشده و نقره بدون حباب امن‌ترند.</p>
+                </article>
+              </div>
+
+              <div class="analysis-method-note">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                <span>شروط تحلیلی: قیمت بالای SMA20، SMA20 بالای SMA50، بازدهی دوره مثبت و عدم ورود حباب به ناحیه بحرانی.</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- Attributing Drivers -->
+          <section class="panel drivers-panel">
+            <div class="panel-head compact-head">
+              <div>
+                <div class="panel-kicker">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"></path></svg>
+                  تفکیک بازدهی و محرک‌ها
+                </div>
+                <h2>چه چیزی طلا را حرکت داد؟</h2>
+              </div>
+              <span class="badge">۶ ماه اخیر</span>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:16px; margin:20px 0;">
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:700; margin-bottom:6px;">
+                  <span>🥇 سهم اونس جهانی طلا</span>
+                  <span id="driverGoldOuncePct">۵۴٪</span>
+                </div>
+                <div class="alloc-progress">
+                  <div class="alloc-progress-fill" id="driverGoldBar" style="width:54%;"></div>
+                </div>
+              </div>
+
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:700; margin-bottom:6px;">
+                  <span>💵 سهم نوسان نرخ ارز (دلار)</span>
+                  <span id="driverUsdPct">۴۶٪</span>
+                </div>
+                <div class="alloc-progress">
+                  <div class="alloc-progress-fill" id="driverUsdBar" style="width:46%; background:var(--violet);"></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="background:var(--surface-soft); padding:14px; border-radius:var(--radius-sm); font-size:0.85rem; line-height:1.7;">
+              <b>💡 نتیجه‌گیری تجربی:</b>
+              رشد طلا در این بازه تلفیقی از رالی اونس جهانی و تغییرات ارزی داخلی بوده است؛ سرمایه‌گذاری در طلا به عنوان یک دارایی دومحرکه عمل می‌کند.
+            </div>
+          </section>
+        </div>
+
+        <!-- 8. YIELD CALCULATOR & ASSET SWAPPER -->
+        <section id="calculator" class="panel calculator-panel">
+          <div>
+            <div class="calculator-intro">
+              <div class="calculator-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="16" height="20" x="4" y="2" rx="2"></rect><line x1="8" x2="16" y1="6" y2="6"></line><line x1="16" x2="16" y1="14" y2="18"></line><path d="M16 10h.01"></path><path d="M12 10h.01"></path><path d="M8 10h.01"></path></svg>
+              </div>
+              <div>
+                <h2>محاسبه‌گر بازده سرمایه</h2>
+                <p style="color:var(--text-muted); font-size:0.85rem;">ارزش رشد سرمایه شما در طلای ۱۸ عیار طی بازه انتخابی</p>
+              </div>
+            </div>
+
+            <div class="calculator-fields" style="margin-top:16px;">
+              <label>
+                <span>مبلغ سرمایه‌گذاری (تومان)</span>
+                <input type="number" id="calcInvestAmount" min="1000000" step="1000000" value="100000000" />
+              </label>
+              <label>
+                <span>بازه زمانی سرمایه‌گذاری</span>
+                <select id="calcPeriodSelect">
+                  <option value="1M">۱ ماه اخیر</option>
+                  <option value="3M">۳ ماه اخیر</option>
+                  <option value="6M" selected>۶ ماه اخیر</option>
+                  <option value="1Y">۱ سال اخیر</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="calculator-result" style="margin-top:16px;">
+              <div>
+                <span>ارزش امروز سرمایه</span>
+                <strong id="calcResultTodayVal">--</strong>
+              </div>
+              <div>
+                <span>سود / زیان دوره</span>
+                <strong class="change positive compact" id="calcResultReturnPct">+۰.۰٪</strong>
+              </div>
+              <div>
+                <span>سود ریالی</span>
+                <strong id="calcResultPnlVal">--</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Asset Swapper -->
+          <div>
+            <div class="calculator-intro">
+              <div class="calculator-icon" style="background:var(--teal-soft); color:var(--teal);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 3 4 4-4 4"></path><path d="M20 7H4"></path><path d="m8 21-4-4 4-4"></path><path d="M4 17h16"></path></svg>
+              </div>
+              <div>
+                <h2>ماشین‌حساب تبدیل دارایی‌ها (Asset Swapper)</h2>
+                <p style="color:var(--text-muted); font-size:0.85rem;">محاسبه برابری و ارزش جایگزینی دارایی‌های مختلف با یکدیگر</p>
+              </div>
+            </div>
+
+            <div class="calculator-fields" style="margin-top:16px;">
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <label>
+                  <span>دارایی مبدأ</span>
+                  <select id="swapSourceAsset">
+                    <option value="coin_rob_new">ربع سکه جدید</option>
+                    <option value="coin_half_new">نیم سکه جدید</option>
+                    <option value="coin_emami">سکه تمام امامی</option>
+                    <option value="gold_18k">طلای ۱۸ عیار</option>
+                    <option value="silver_999">نقره ۹۹۹ خالص</option>
+                    <option value="currency_usd">دلار آمریکا</option>
+                  </select>
+                </label>
+                <label>
+                  <span>تعداد / مقدار مبدأ</span>
+                  <input type="number" id="swapSourceQty" value="2" min="0.1" step="0.5" />
+                </label>
+              </div>
+
+              <label>
+                <span>دارایی مقصد (تبدیل به)</span>
+                <select id="swapTargetAsset">
+                  <option value="gold_melted">طلای آب‌شده (گرم)</option>
+                  <option value="gold_18k">طلای ۱۸ عیار (گرم)</option>
+                  <option value="silver_999" selected>نقره ۹۹۹ شمش/ساچمه (گرم)</option>
+                  <option value="currency_usdt">تتر دیجیتال (USDT)</option>
+                  <option value="coin_bahar">سکه بهار آزادی (عدد)</option>
+                </select>
+              </label>
+            </div>
+
+            <div style="background:var(--surface-soft); border-radius:var(--radius-md); padding:18px; margin-top:16px; text-align:center;">
+              <span style="font-size:0.8rem; color:var(--text-muted); display:block;">معادل حاصل از تبدیل:</span>
+              <strong id="swapResultText" style="font-size:1.55rem; font-weight:800; color:var(--teal); margin:6px 0; display:block;">--</strong>
+              <small id="swapDetailText" style="color:var(--text-muted); font-size:0.8rem;">بر اساس نرخ‌های زنده لحظه‌ای</small>
+            </div>
+          </div>
+        </section>
+
+        <!-- 9. PRICE ALERTS -->
+        <section id="alerts" class="panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-kicker">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.268 21a2 2 0 0 0 3.464 0"></path><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"></path></svg>
+                هشدار لحظه‌ای قیمت
+              </div>
+              <h2>تنظیم هشدارهای هوشمند (Browser Notification)</h2>
+              <p style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">
+                تعیین تارگت قیمتی؛ به محض رسیدن یا عبور قیمت، در مرورگر اعلان و زنگ هشدار دریافت کنید.
+              </p>
+            </div>
+            <button class="btn-primary" id="openAddAlertModalBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+              ثبت هشدار جدید
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table" id="alertsTable">
+              <thead>
+                <tr>
+                  <th>دارایی</th>
+                  <th>قیمت هدف (تارگت)</th>
+                  <th>شرط هشدار</th>
+                  <th>قیمت فعلی بازار</th>
+                  <th>وضعیت</th>
+                  <th>عملیات</th>
+                </tr>
+              </thead>
+              <tbody id="alertsTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 10. SOURCES & FOOTER -->
+        <footer id="sources" class="footer">
+          <div class="source-note">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>
+            <p>
+              <b>روش و منبع داده‌ها:</b> قیمت‌های جاری بازار به صورت پیوسته از شبکه اطلاع‌رسانی طلا، سکه و ارز ایران (TGJU.org) استخراج شده و بدون تاخیر نمایش داده می‌شوند.
+            </p>
+          </div>
+
+          <div class="source-links">
+            <a href="https://www.tgju.org/profile/geram18" target="_blank" rel="noreferrer">طلای ۱۸ عیار در TGJU ↗</a>
+            <a href="https://www.tgju.org/profile/sekee" target="_blank" rel="noreferrer">سکه امامی در TGJU ↗</a>
+            <a href="https://www.tgju.org/profile/price_dollar_rl" target="_blank" rel="noreferrer">دلار بازار آزاد در TGJU ↗</a>
+            <a href="https://www.tgju.org/profile/ons" target="_blank" rel="noreferrer">اونس جهانی طلا ↗</a>
+            <a href="https://www.tgju.org/profile/silver" target="_blank" rel="noreferrer">نقره جهانی ↗</a>
+          </div>
+
+          <p class="disclaimer">
+            این داشبورد یک ابزار رصد و تحلیل داده‌های مالی است و محتوای آن توصیه قطعی خرید، فروش یا سرمایه‌گذاری محسوب نمی‌شود.
+          </p>
+        </footer>
+      </div>
+    </section>
+  </div>
+
+  <!-- MODAL: ADD PORTFOLIO HOLDING -->
+  <div class="modal-overlay" id="addHoldingModal">
+    <div class="modal-content">
+      <div class="modal-head">
+        <h3>➕ ثبت دارایی جدید در سبد من</h3>
+        <button class="icon-btn" id="closeHoldingModalBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="holdingCategorySelect">دسته‌بندی دارایی:</label>
+          <select id="holdingCategorySelect">
+            <option value="gold">✨ طلا و آبشده</option>
+            <option value="silver">⚪️ انواع نقره</option>
+            <option value="coins_new">🪙 سکه‌های طرح جدید (بانکی)</option>
+            <option value="coins_old">🏛 سکه‌های طرح قدیم (قبل ۸۶)</option>
+            <option value="parsian">🎖 سکه‌های پارسیان</option>
+            <option value="currencies">💵 ارزها و تتر</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="holdingAssetSelect">انتخاب دارایی مشخص:</label>
+          <select id="holdingAssetSelect">
+            <!-- Dynamically populated based on category -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="holdingQtyInput" id="holdingQtyLabel">مقدار / وزن (گرم):</label>
+          <input type="number" id="holdingQtyInput" min="0.01" step="0.01" placeholder="مثلاً: 5.25" required />
+        </div>
+
+        <div class="form-group">
+          <label for="holdingBuyPriceInput">میانگین قیمت خرید واحد (تومان):</label>
+          <input type="number" id="holdingBuyPriceInput" min="0" step="1000" placeholder="مثلاً: 22000000 (اختیاری جهت محاسبه سود/زیان)" />
+          <small style="color:var(--text-muted); font-size:0.75rem;">در صورت خالی گذاشتن، نرخ زنده فعلی به عنوان قیمت خرید لحاظ می‌شود.</small>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-secondary" id="cancelHoldingModalBtn">انصراف</button>
+        <button class="btn-primary" id="saveHoldingBtn">ذخیره در سبد دارایی</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD PRICE ALERT -->
+  <div class="modal-overlay" id="addAlertModal">
+    <div class="modal-content">
+      <div class="modal-head">
+        <h3>🔔 ثبت هشدار قیمت جدید</h3>
+        <button class="icon-btn" id="closeAlertModalBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="alertAssetSelect">انتخاب دارایی جهت پایش:</label>
+          <select id="alertAssetSelect">
+            <!-- Dynamically populated with all assets -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>قیمت زنده فعلی این دارایی:</label>
+          <input type="text" id="alertCurrentPricePreview" readonly style="background:var(--surface-soft);" />
+        </div>
+
+        <div class="form-group">
+          <label for="alertTargetPriceInput">قیمت هدف مدنظر (تومان):</label>
+          <input type="number" id="alertTargetPriceInput" min="1000" step="10000" placeholder="مثلاً: 24000000" required />
+        </div>
+
+        <div class="form-group">
+          <label for="alertDirectionSelect">شرط فعال‌سازی هشدار:</label>
+          <select id="alertDirectionSelect">
+            <option value="above">📈 عبور قیمت به بالای تارگت (صعود)</option>
+            <option value="below">📉 افت قیمت به زیر تارگت (نزول)</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-secondary" id="cancelAlertModalBtn">انصراف</button>
+        <button class="btn-primary" id="saveAlertBtn">فعال‌سازی هشدار</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Box -->
+  <div id="toastNotification" class="toast-notification"></div>
+
+  <!-- Application Script -->
+  <script src="/app.js"></script>
+</body>
+</html>
