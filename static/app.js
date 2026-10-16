@@ -126,24 +126,6 @@ const StorageService = {
     localStorage.setItem('tala_portfolio', JSON.stringify(AppState.portfolio));
     UI.updatePortfolioCountBadge();
     UI.renderPortfolio();
-    this.syncPortfolioToServer();
-  },
-
-  async syncPortfolioToServer() {
-    if (AuthService && AuthService.token) {
-      try {
-        await fetch('/api/portfolio', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${AuthService.token}`
-          },
-          body: JSON.stringify({ portfolio: AppState.portfolio })
-        });
-      } catch (e) {
-        console.warn('Sync to server failed', e);
-      }
-    }
   },
 
   loadAlerts() {
@@ -160,106 +142,6 @@ const StorageService = {
     localStorage.setItem('tala_alerts', JSON.stringify(AppState.alerts));
     UI.updateAlertsCountText();
     UI.renderAlerts();
-  }
-};
-
-// Auth Service
-const AuthService = {
-  token: localStorage.getItem('tala_auth_token') || null,
-  user: null,
-
-  async checkAuth() {
-    if (!this.token) {
-      UI.updateAuthUI(null);
-      return null;
-    }
-    try {
-      const res = await fetch('/api/auth/me', {
-        headers: { 'Authorization': `Bearer ${this.token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.authenticated && data.user) {
-          this.user = data.user;
-          UI.updateAuthUI(this.user);
-          if (data.portfolio && Array.isArray(data.portfolio) && data.portfolio.length > 0) {
-            AppState.portfolio = data.portfolio;
-            localStorage.setItem('tala_portfolio', JSON.stringify(AppState.portfolio));
-            UI.updatePortfolioCountBadge();
-            UI.renderPortfolio();
-          }
-          return this.user;
-        }
-      }
-    } catch (e) {
-      console.warn('Auth check failed', e);
-    }
-    this.token = null;
-    localStorage.removeItem('tala_auth_token');
-    UI.updateAuthUI(null);
-    return null;
-  },
-
-  async login(username, password) {
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
-    });
-    const data = await res.json();
-    if (res.ok && data.success) {
-      this.token = data.token;
-      this.user = data.user;
-      localStorage.setItem('tala_auth_token', this.token);
-      UI.updateAuthUI(this.user);
-
-      if (data.portfolio && Array.isArray(data.portfolio) && data.portfolio.length > 0) {
-        AppState.portfolio = data.portfolio;
-        localStorage.setItem('tala_portfolio', JSON.stringify(AppState.portfolio));
-      } else if (AppState.portfolio.length > 0) {
-        await StorageService.syncPortfolioToServer();
-      }
-      UI.updatePortfolioCountBadge();
-      UI.renderPortfolio();
-      return { success: true };
-    }
-    return { success: false, error: data.error || 'نام کاربری یا رمز عبور اشتباه است.' };
-  },
-
-  async register(username, password, display_name) {
-    const res = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password, display_name })
-    });
-    const data = await res.json();
-    if (res.ok && data.success) {
-      this.token = data.token;
-      this.user = data.user;
-      localStorage.setItem('tala_auth_token', this.token);
-      UI.updateAuthUI(this.user);
-      if (AppState.portfolio.length > 0) {
-        await StorageService.syncPortfolioToServer();
-      }
-      return { success: true };
-    }
-    return { success: false, error: data.error || 'خطا در ثبت‌نام.' };
-  },
-
-  async logout() {
-    if (this.token) {
-      try {
-        await fetch('/api/auth/logout', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${this.token}` }
-        });
-      } catch (e) {}
-    }
-    this.token = null;
-    this.user = null;
-    localStorage.removeItem('tala_auth_token');
-    UI.updateAuthUI(null);
-    UI.showToast('از حساب کاربری خارج شدید.');
   }
 };
 
@@ -472,25 +354,7 @@ const UI = {
     }
   },
 
-  updateAuthUI(user) {
-    const openBtn = document.getElementById('openAuthModalBtn');
-    const badge = document.getElementById('userProfileBadge');
-    const nameEl = document.getElementById('userDisplayName');
-    const avatarEl = document.getElementById('userAvatarLetter');
 
-    if (user) {
-      if (openBtn) openBtn.style.display = 'none';
-      if (badge) badge.style.display = 'flex';
-      if (nameEl) nameEl.textContent = user.display_name || user.username;
-      if (avatarEl) {
-        const letter = (user.display_name || user.username || 'ک')[0];
-        avatarEl.textContent = letter;
-      }
-    } else {
-      if (openBtn) openBtn.style.display = 'inline-flex';
-      if (badge) badge.style.display = 'none';
-    }
-  },
 
   initTheme() {
     document.documentElement.setAttribute('data-theme', AppState.theme);
@@ -744,13 +608,8 @@ const UI = {
     document.getElementById('statSma50').textContent = `نمای ۵۰ روزه: ${chartData.sma50Distance}`;
 
     // Update Analysis Panel Sync
-    document.getElementById('analysisScoreVal').textContent = chartData.score;
-    document.getElementById('analysisSentimentText').textContent = chartData.sentiment;
-    document.getElementById('metricSma20Dist').textContent = chartData.sma20Distance;
-    document.getElementById('metricSma50Dist').textContent = chartData.sma50Distance;
-    document.getElementById('metricRangePos').textContent = `${chartData.rangePosition}٪`;
-    document.getElementById('metricRefLow').textContent = Utils.formatNumber(chartData.refLow20);
-    document.getElementById('metricRefHigh').textContent = Utils.formatNumber(chartData.refHigh20);
+    AppState.lastChartData = chartData;
+    UI.renderAnalysisPanel();
 
     // Render Canvas via Chart.js
     const ctx = document.getElementById('mainChart').getContext('2d');
@@ -850,6 +709,236 @@ const UI = {
         }
       }
     });
+  },
+
+  renderAnalysisPanel() {
+    const chartData = AppState.lastChartData;
+    if (!chartData) return;
+
+    // Update Top Score & Sentiment
+    const scoreVal = document.getElementById('analysisScoreVal');
+    const sentimentText = document.getElementById('analysisSentimentText');
+    const sentimentBadge = document.getElementById('analysisSentimentBadge');
+
+    if (scoreVal) scoreVal.textContent = Utils.formatNumber(chartData.score || 75);
+    if (sentimentText) sentimentText.textContent = chartData.sentiment || 'تمایل صعودی ملایم و باثبات';
+    if (sentimentBadge) {
+      sentimentBadge.className = `descriptive-badge ${chartData.periodChangePct >= 0 ? 'positive' : 'negative'}`;
+    }
+
+    const tab = AppState.activeAnalysisTab || 'trend';
+    const container = document.getElementById('analysisTabContent');
+    if (!container) return;
+
+    if (tab === 'trend') {
+      container.innerHTML = `
+        <div class="analysis-metric-grid">
+          <div class="analysis-metric">
+            <span>فاصله از SMA20</span>
+            <strong>${chartData.sma20Distance}</strong>
+            <small>میانگین متحرک ۲۰ روزه کوتاه مدت</small>
+          </div>
+          <div class="analysis-metric">
+            <span>فاصله از SMA50</span>
+            <strong>${chartData.sma50Distance}</strong>
+            <small>جهت‌گیری میان‌مدت و تمایل اصلی</small>
+          </div>
+          <div class="analysis-metric">
+            <span>جایگاه در دامنه دوره</span>
+            <strong>${chartData.rangePosition}٪</strong>
+            <small>۰٪ کف مطلق و ۱۰۰٪ سقف دوره</small>
+          </div>
+          <div class="analysis-metric">
+            <span>کف مرجع دوره</span>
+            <strong>${Utils.formatNumber(chartData.refLow20)}</strong>
+            <small>سطح حمایتی و کف روانی ثبت‌شده</small>
+          </div>
+          <div class="analysis-metric">
+            <span>سقف مرجع دوره</span>
+            <strong>${Utils.formatNumber(chartData.refHigh20)}</strong>
+            <small>سطح مقاومتی و قله تاریخی دوره</small>
+          </div>
+        </div>
+
+        <div class="analysis-insight-cards">
+          <article>
+            <span>۱</span>
+            <p>همبستگی مستقیم میان نرخ ارز آزاد، اونس جهانی طلا و نرخ ریالی؛ در این دوره شیب صعودی پایدار بر نمودار حاکم بوده است.</p>
+          </article>
+          <article>
+            <span>۲</span>
+            <p>قرار گرفتن قیمت بالاتر از خطوط SMA20 و SMA50 تثبیت فاز انبساطی صعودی و اعتبار سطوح تقاضا را نشان می‌دهد.</p>
+          </article>
+          <article>
+            <span>۳</span>
+            <p>نوسانات نزدیک سقف دوره معمولاً همراه با استراحت‌های مقطعی است؛ تثبیت بالاتر از کف ۲۰ روزه محرک تداوم روند است.</p>
+          </article>
+        </div>
+
+        <div class="analysis-method-note">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+          <span>روش‌شناسی روند: قیمت بالاتر از SMA20 همراه با ترند صعودی SMA50 بیانگر قدرت خریداران در تایم‌فریم انتخابی است.</span>
+        </div>
+      `;
+    } else if (tab === 'momentum') {
+      const isPositive = chartData.periodChangePct >= 0;
+      container.innerHTML = `
+        <div class="analysis-metric-grid">
+          <div class="analysis-metric">
+            <span>شتاب بازدهی دوره</span>
+            <strong class="${isPositive ? 'color-pos' : 'color-neg'}">${isPositive ? '+' : ''}${chartData.periodChangePct}٪</strong>
+            <small>تغییر کل بازه انتخابی</small>
+          </div>
+          <div class="analysis-metric">
+            <span>شاخص نوسان‌پذیری (Vol)</span>
+            <strong>${chartData.volatility || '۱۱.۵٪'}</strong>
+            <small>انحراف معیار نوسانات روزانه</small>
+          </div>
+          <div class="analysis-metric">
+            <span>شاخص قدرت نسبی برآوردی</span>
+            <strong>${Math.min(92, Math.max(25, Math.round(50 + (chartData.rangePosition - 50) * 0.6)))} / ۱۰۰</strong>
+            <small>وضعیت اشباع خرید یا فروش</small>
+          </div>
+          <div class="analysis-metric">
+            <span>میانگین قیمت بازه</span>
+            <strong>${Utils.formatNumber(chartData.avgPrice)}</strong>
+            <small>ارزش منصفانه تجمعی (Fair Value)</small>
+          </div>
+          <div class="analysis-metric">
+            <span>دامنه نوسان قله تا کف</span>
+            <strong>${Utils.formatNumber(chartData.highPrice - chartData.lowPrice)}</strong>
+            <small>اختلاف سقف و کف بازه</small>
+          </div>
+        </div>
+
+        <div class="analysis-insight-cards">
+          <article>
+            <span>۱</span>
+            <p>شتاب حرکتی (Momentum) نشان‌دهنده ورود نقدینگی فعال و پیوسته به بازار در دوره‌های صعودی است.</p>
+          </article>
+          <article>
+            <span>۲</span>
+            <p>در سطوح اشباع خرید (RSI بالای ۷۰)، مدیریت حجم خرید و خودداری از ورود یکجا در سقف‌ها از اصول کلیدی کنترل ریسک است.</p>
+          </article>
+          <article>
+            <span>۳</span>
+            <p>افت شتاب بدون اصلاح قیمتی عمیق (واگرایی مخفی) اغلب به معنای دست به دست شدن دارایی‌ها میان معامله‌گران کوتاه‌مدت است.</p>
+          </article>
+        </div>
+
+        <div class="analysis-method-note">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+          <span>شاخص‌های شتاب: پایش بردار سرعت بازدهی و نوسان‌پذیری جهت تمایز رشدهای سالم پایدار از پامپ‌های هیجانی گذرا.</span>
+        </div>
+      `;
+    } else if (tab === 'drivers') {
+      const ons = AppState.prices.macro.ons_gold;
+      const usd = AppState.prices.currencies.currency_usd.toman;
+      const gsr = AppState.prices.macro.gold_silver_ratio;
+
+      container.innerHTML = `
+        <div class="analysis-metric-grid">
+          <div class="analysis-metric">
+            <span>اونس طلا جهانی</span>
+            <strong>$${Utils.formatNumber(ons)}</strong>
+            <small>پیشران بین‌المللی فلزات گرانبها</small>
+          </div>
+          <div class="analysis-metric">
+            <span>دلار آزاد تهران</span>
+            <strong>${Utils.formatNumber(usd)} تومان</strong>
+            <small>پیشران اصلی قیمت داخلی</small>
+          </div>
+          <div class="analysis-metric">
+            <span>نسبت طلا به نقره (GSR)</span>
+            <strong>${gsr}</strong>
+            <small>شاخص چرخه ارزندگی نسبی نقره/طلا</small>
+          </div>
+          <div class="analysis-metric">
+            <span>وزن تأثیر دلار بر طلا</span>
+            <strong>حدود ۶۰٪</strong>
+            <small>برآورد حساسیت بازدهی ریالی</small>
+          </div>
+          <div class="analysis-metric">
+            <span>وزن تأثیر اونس جهانی</span>
+            <strong>حدود ۴۰٪</strong>
+            <small>انتقال تورم و ریسک‌های جهانی</small>
+          </div>
+        </div>
+
+        <div class="analysis-insight-cards">
+          <article>
+            <span>۱</span>
+            <p>فرمول ذاتی طلای داخلی: <b>(اونس جهانی × نرخ دلار) تقسیم بر ضریب تبدیل</b>. حرکت همزمان این دو موتور موجب جهش مرکب می‌شود.</p>
+          </article>
+          <article>
+            <span>۲</span>
+            <p>نسبت طلا به نقره بالای ۸۰ بیانگر ارزش تاریخی بالای طلا و ارزندگی فزاینده نقره برای تنوع‌بخشی بلندمدت است.</p>
+          </article>
+          <article>
+            <span>۳</span>
+            <p>در دوره‌های ثبات نسبی دلار، نوسانات بازار طلا مستقیماً از اخبار فدرال رزرو، بازدهی اوراق قرضه آمریکا و داده‌های اشتغال تغذیه می‌کند.</p>
+          </article>
+        </div>
+
+        <div class="analysis-method-note">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+          <span>موتورهای محرک: تفکیک دقیق وزن اثرگذاری فاکتورهای کلان (دلار آزاد، تورم داخلی و اونس جهانی) بر قیمت‌های نهایی.</span>
+        </div>
+      `;
+    } else if (tab === 'risk') {
+      const emamiBubble = AppState.prices.bubbles.bubble_emami ? AppState.prices.bubbles.bubble_emami.percentage : 19.2;
+      const robBubble = AppState.prices.bubbles.bubble_rob ? AppState.prices.bubbles.bubble_rob.percentage : 39.7;
+
+      container.innerHTML = `
+        <div class="analysis-metric-grid">
+          <div class="analysis-metric">
+            <span>حباب سکه امامی</span>
+            <strong class="${emamiBubble > 20 ? 'color-neg' : 'color-pos'}">${emamiBubble}٪</strong>
+            <small>نسبت اضافه ارزش به ارزش ذاتی</small>
+          </div>
+          <div class="analysis-metric">
+            <span>حباب ربع سکه</span>
+            <strong class="color-neg">${robBubble}٪</strong>
+            <small>حباب بالای هیجانی در قطعات کوچک</small>
+          </div>
+          <div class="analysis-metric">
+            <span>حباب طلای آبشده / ۱۸ عیار</span>
+            <strong class="color-pos">۰٪ (نزدیک به صفر)</strong>
+            <small>امن‌ترین ابزار حفظ ارزش بدون ریسک حباب</small>
+          </div>
+          <div class="analysis-metric">
+            <span>ریسک افت ناگهانی حباب</span>
+            <strong style="color:var(--brand-gold);">متوسط به بالا</strong>
+            <small>در قطعات سکه با نوسان انتظارات تورمی</small>
+          </div>
+          <div class="analysis-metric">
+            <span>استراتژی پیشنهادی مدیریت ریسک</span>
+            <strong class="color-pos">خرید پله‌ای (DCA)</strong>
+            <small>پراکندگی زمانی خرید جهت کاهش میانگین</small>
+          </div>
+        </div>
+
+        <div class="analysis-insight-cards">
+          <article>
+            <span>۱</span>
+            <p>در فازهای افزایش شدید حباب سکه، تغییر پورتفوی به سمت <b>طلای آبشده و شمش طلا</b> ریسک تخلیه ناگهانی حباب را به صفر می‌رساند.</p>
+          </article>
+          <article>
+            <span>۲</span>
+            <p>تنوع‌بخشی به دارایی‌ها (نقره، طلا و تتر) از آسیب‌پذیری در برابر نوسانات یک‌باره تک‌بازاری به طور کامل جلوگیری می‌کند.</p>
+          </article>
+          <article>
+            <span>۳</span>
+            <p>هرگز کل سرمایه را در یک نقطه زمانی وارد نکنید؛ تقسیم نقدینگی به ۳ الی ۵ پله خرید، بهترین سپر دفاعی در برابر اصلاحات غیرمنتظره است.</p>
+          </article>
+        </div>
+
+        <div class="analysis-method-note">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          <span>سپر مدیریت ریسک: حفاظت از سبد دارایی با تمرکز بر وزن حباب قیمتی، ابزارهای بدون کارمزد و ورود چندمرحله‌ای (DCA).</span>
+        </div>
+      `;
+    }
   },
 
   renderPortfolio() {
@@ -1187,9 +1276,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Theme toggle
   document.getElementById('themeToggleBtn').addEventListener('click', UI.toggleTheme);
 
-  // Initial Data Fetch & Cloud Auth Check
+  // Initial Data Fetch
   await ApiService.fetchPrices(true);
-  await AuthService.checkAuth();
   UI.renderOverviewCards();
   UI.renderMarketBoard();
   UI.renderPortfolio();
@@ -1237,6 +1325,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       UI.renderChart();
     }
   });
+
+  // Analysis Tabs Controls
+  const analysisTabs = document.getElementById('analysisTabsGroup');
+  if (analysisTabs) {
+    analysisTabs.addEventListener('click', (e) => {
+      if (e.target.tagName === 'BUTTON') {
+        analysisTabs.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        AppState.activeAnalysisTab = e.target.dataset.tab;
+        UI.renderAnalysisPanel();
+      }
+    });
+  }
 
   // Scenario Sliders
   ['scenarioOunceSlider', 'scenarioUsdSlider', 'scenarioBubbleSlider'].forEach(id => {
@@ -1438,103 +1539,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('exportDataBtn').addEventListener('click', () => {
     window.print();
   });
-
-  // Auth Modal Controls
-  const authModal = document.getElementById('authModal');
-  const openAuthBtn = document.getElementById('openAuthModalBtn');
-  const closeAuthBtn = document.getElementById('closeAuthModalBtn');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const tabBtnLogin = document.getElementById('tabBtnLogin');
-  const tabBtnRegister = document.getElementById('tabBtnRegister');
-  const loginForm = document.getElementById('loginForm');
-  const registerForm = document.getElementById('registerForm');
-  const loginMsg = document.getElementById('loginMsg');
-  const registerMsg = document.getElementById('registerMsg');
-
-  if (openAuthBtn && authModal) {
-    openAuthBtn.addEventListener('click', () => {
-      authModal.classList.add('active');
-      if (loginMsg) { loginMsg.className = 'auth-msg'; loginMsg.textContent = ''; }
-      if (registerMsg) { registerMsg.className = 'auth-msg'; registerMsg.textContent = ''; }
-    });
-  }
-
-  if (closeAuthBtn && authModal) {
-    closeAuthBtn.addEventListener('click', () => authModal.classList.remove('active'));
-  }
-
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', async () => {
-      if (confirm('آیا مایلید از حساب کاربری خود خارج شوید؟')) {
-        await AuthService.logout();
-      }
-    });
-  }
-
-  if (tabBtnLogin && tabBtnRegister) {
-    tabBtnLogin.addEventListener('click', () => {
-      tabBtnLogin.classList.add('active');
-      tabBtnRegister.classList.remove('active');
-      loginForm.classList.add('active');
-      registerForm.classList.remove('active');
-    });
-
-    tabBtnRegister.addEventListener('click', () => {
-      tabBtnRegister.classList.add('active');
-      tabBtnLogin.classList.remove('active');
-      registerForm.classList.add('active');
-      loginForm.classList.remove('active');
-    });
-  }
-
-  if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const u = document.getElementById('loginUsername').value.trim();
-      const p = document.getElementById('loginPassword').value.trim();
-      loginMsg.className = 'auth-msg';
-      loginMsg.textContent = 'در حال بررسی اطلاعات...';
-      loginMsg.style.display = 'block';
-
-      const res = await AuthService.login(u, p);
-      if (res.success) {
-        loginMsg.className = 'auth-msg success';
-        loginMsg.textContent = 'خوش آمدید! سبد دارایی شما همگام‌سازی شد.';
-        setTimeout(() => {
-          authModal.classList.remove('active');
-          UI.showToast(`خوش آمدید، ${AuthService.user.display_name || u} 👋`);
-        }, 800);
-      } else {
-        loginMsg.className = 'auth-msg error';
-        loginMsg.textContent = res.error;
-      }
-    });
-  }
-
-  if (registerForm) {
-    registerForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const name = document.getElementById('regDisplayName').value.trim();
-      const u = document.getElementById('regUsername').value.trim();
-      const p = document.getElementById('regPassword').value.trim();
-      registerMsg.className = 'auth-msg';
-      registerMsg.textContent = 'در حال ایجاد حساب کاربری...';
-      registerMsg.style.display = 'block';
-
-      const res = await AuthService.register(u, p, name);
-      if (res.success) {
-        registerMsg.className = 'auth-msg success';
-        registerMsg.textContent = 'حساب با موفقیت ایجاد شد و سبد شما ثبت گردید!';
-        setTimeout(() => {
-          authModal.classList.remove('active');
-          UI.showToast(`حساب کاربری ${name} فعال شد 🎉`);
-        }, 800);
-      } else {
-        registerMsg.className = 'auth-msg error';
-        registerMsg.textContent = res.error;
-      }
-    });
-  }
 
   // Periodic Polling every 60 seconds
   setInterval(async () => {
