@@ -1,11 +1,11 @@
 <div dir="rtl">
 
 # 🪙 سامانه هوشمند طلا و دارایی‌ها (TalaHaam | طلاهام)
-### رصد لحظه‌ای نرخ‌های TGJU، نمودارهای تحلیلی سبک TradingView، و مدیریت سبد دارایی (P&L)
+### رصد لحظه‌ای نرخ‌های TGJU، تابلوی جامع سقف و کف، و مدیریت سبد دارایی (P&L)
 
 [![Live Web App](https://img.shields.io/badge/Live%20Website-TalaHaam-FFD700?style=for-the-badge&logo=google-chrome&logoColor=black)](https://talahaam.vercel.app)
 [![TGJU Feed](https://img.shields.io/badge/Data%20Feed-TGJU.org-blue?style=for-the-badge)](https://www.tgju.org)
-[![TradingView Charts](https://img.shields.io/badge/Charts-Lightweight%20TradingView-green?style=for-the-badge)](https://talahaam.vercel.app)
+[![Pure Client-Side](https://img.shields.io/badge/P&L-Client--Side%20Engine-brightgreen?style=for-the-badge)](https://talahaam.vercel.app)
 
 ---
 
@@ -34,11 +34,11 @@
 
 ---
 
-### ۲. نمودار پیشرفته کندل‌استیک سبک تریدینگ‌ویو (TradingView Lightweight Terminal)
-- **موتور نموداری TradingView:** رسم زنده کندل‌های شمعی ژاپنی (Candlestick)، ناحیه‌ای (Area) و خطی (Line) با سرعت بالا
-- **تایم‌فریم‌های کاربردی:** ۱ ماهه (`1M`)، ۳ ماهه (`3M`)، ۶ ماهه (`6M`) و ۱ ساله (`1Y`)
-- **اندیکاتور تکنیکال:** میانگین متحرک ۲۰ روزه (`SMA 20`) به همراه کراس‌هیر و نمایش دقیق `OHLC` (Open, High, Low, Close)
-- **ابزارهای رسم:** نوار ابزار عمودی برای خط روند، فیبوناچی، محدوده باکس و بزرگنمایی
+### ۲. تابلوی جامع سقف و کف روزانه و دامنه نوسان
+- نمایش لحظه‌ای قیمت فعلی، بالاترین و پایین‌ترین قیمت ثبت‌شده امروز (`Daily High/Low`)
+- درصد و مبلغ نوسان هر قلم دارایی به همراه برچسب زمانی آخرین تغییر
+- دسته‌بندی و فیلترهای تفکیکی بر اساس طلا، نقره، سکه جدید، سکه قدیم، پارسیان، ارزها و حباب‌ها
+- جستجوی سریع دارایی‌ها
 
 ---
 

@@ -446,14 +446,10 @@ const AppState = {
   portfolio: [],
   alerts: [],
   theme: localStorage.getItem('tala_theme') || 'light',
-  chartInstance: null,
-  tvChart: null,
-  activeChartMarket: 'iran',
-  activeChartType: 'candlestick',
-  activeChartPeriod: '6M',
   activeBoardCategory: 'all',
   activeAnalysisTab: 'trend',
   currentBudget: 50000000,
+  lastChartData: null,
 };
 
 // Utilities
@@ -824,9 +820,6 @@ const UI = {
     AppState.theme = AppState.theme === 'light' ? 'dark' : 'light';
     localStorage.setItem('tala_theme', AppState.theme);
     UI.initTheme();
-    if (AppState.chartInstance || AppState.tvChart) {
-      UI.renderChart();
-    }
   },
 
   updatePortfolioCountBadge() {
@@ -1020,242 +1013,12 @@ const UI = {
     }).join('');
   },
 
-  async renderChart() {
-    const market = AppState.activeChartMarket || 'iran';
-    const period = AppState.activeChartPeriod || '6M';
-    const chartType = AppState.activeChartType || 'candlestick';
-
-    const titles = {
-      iran: 'طلای ۱۸ عیار',
-      coin: 'سکه امامی',
-      global: 'اونس جهانی طلا',
-      usd: 'دلار بازار آزاد',
-      silver: 'نقره ۹۹۹ خالص',
-    };
-    const title = titles[market] || 'نمودار بازار';
-    const titleEl = document.getElementById('chartAssetTitle');
-    if (titleEl) titleEl.textContent = title;
-
-    const chartData = await ApiService.fetchChartData(market, period);
-    if (!chartData || !chartData.series || !chartData.series.length) return;
-
-    const unitLabel = chartData.isDollar ? '$' : 'تومان';
-    const currentPriceEl = document.getElementById('chartCurrentPriceText');
-    if (currentPriceEl) {
-      currentPriceEl.innerHTML = `${chartData.isDollar ? '$' : ''}${Utils.formatNumber(chartData.currentPrice)} <small>${chartData.isDollar ? '' : 'تومان'}</small>`;
+  async renderAnalysisPanel() {
+    if (!AppState.lastChartData) {
+      AppState.lastChartData = await ApiService.fetchChartData('iran', '6M');
     }
-
-    const changeBadge = document.getElementById('chartPeriodChangeBadge');
-    if (changeBadge) {
-      changeBadge.textContent = `${chartData.periodChangePct >= 0 ? '+' : ''}${chartData.periodChangePct}٪`;
-      changeBadge.className = `change ${chartData.periodChangePct >= 0 ? 'positive' : 'negative'}`;
-    }
-
-    // Update Mini Stats
-    const highEl = document.getElementById('statHighPrice');
-    if (highEl) highEl.textContent = `${chartData.isDollar ? '$' : ''}${Utils.formatNumber(chartData.highPrice)} ${unitLabel}`;
-    const lowEl = document.getElementById('statLowPrice');
-    if (lowEl) lowEl.textContent = `${chartData.isDollar ? '$' : ''}${Utils.formatNumber(chartData.lowPrice)} ${unitLabel}`;
-    const avgEl = document.getElementById('statAvgPrice');
-    if (avgEl) avgEl.textContent = `${chartData.isDollar ? '$' : ''}${Utils.formatNumber(chartData.avgPrice)} ${unitLabel}`;
-    const sma20El = document.getElementById('statSma20');
-    if (sma20El) sma20El.textContent = chartData.sma20Distance;
-    const sma50El = document.getElementById('statSma50');
-    if (sma50El) sma50El.textContent = `نمای ۵۰ روزه: ${chartData.sma50Distance}`;
-
-    // Update Analysis Panel Sync
-    AppState.lastChartData = chartData;
-    UI.renderAnalysisPanel();
-
-    const container = document.getElementById('tvChartContainer');
-    if (!container) return;
-
-    if (AppState.tvChart) {
-      try {
-        AppState.tvChart.remove();
-      } catch (e) {}
-      AppState.tvChart = null;
-    }
-    container.innerHTML = '';
-
-    if (!window.LightweightCharts) {
-      container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-weight:600;">در حال بارگذاری موتور نمودار تریدینگ‌ویو...</div>';
-      return;
-    }
-
-    const isDark = AppState.theme === 'dark';
-    const bg = isDark ? '#14171f' : '#ffffff';
-    const textColor = isDark ? '#9ca3af' : '#4b5563';
-    const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
-    const borderColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)';
-
-    const chart = window.LightweightCharts.createChart(container, {
-      width: container.clientWidth || 800,
-      height: container.clientHeight || 420,
-      layout: {
-        background: { color: bg },
-        textColor: textColor,
-        fontFamily: 'Vazirmatn, sans-serif',
-        fontSize: 11,
-      },
-      grid: {
-        vertLines: { color: gridColor },
-        horzLines: { color: gridColor },
-      },
-      crosshair: {
-        mode: window.LightweightCharts.CrosshairMode.Normal,
-      },
-      rightPriceScale: {
-        borderColor: borderColor,
-        scaleMargins: {
-          top: 0.1,
-          bottom: 0.22,
-        },
-      },
-      timeScale: {
-        borderColor: borderColor,
-        timeVisible: true,
-        secondsVisible: false,
-      },
-      localization: {
-        priceFormatter: (p) => `${Utils.formatNumber(p)} ${unitLabel}`,
-      },
-    });
-
-    AppState.tvChart = chart;
-
-    let mainSeries;
-    if (chartType === 'candlestick') {
-      mainSeries = chart.addCandlestickSeries({
-        upColor: '#10b981',
-        downColor: '#ef4444',
-        borderVisible: false,
-        wickUpColor: '#10b981',
-        wickDownColor: '#ef4444',
-      });
-      mainSeries.setData(chartData.series.map(s => ({
-        time: s.time,
-        open: s.open,
-        high: s.high,
-        low: s.low,
-        close: s.close,
-      })));
-    } else if (chartType === 'area') {
-      mainSeries = chart.addAreaSeries({
-        topColor: 'rgba(183, 138, 50, 0.45)',
-        bottomColor: 'rgba(183, 138, 50, 0.01)',
-        lineColor: '#b78a32',
-        lineWidth: 2,
-      });
-      mainSeries.setData(chartData.series.map(s => ({
-        time: s.time,
-        value: s.close,
-      })));
-    } else {
-      mainSeries = chart.addLineSeries({
-        color: '#b78a32',
-        lineWidth: 2,
-      });
-      mainSeries.setData(chartData.series.map(s => ({
-        time: s.time,
-        value: s.close,
-      })));
-    }
-
-    // Add SMA 20 Overlay Line
-    const smaPoints = chartData.series.filter(s => s.sma20 !== null).map(s => ({ time: s.time, value: s.sma20 }));
-    if (smaPoints.length > 0) {
-      const smaSeries = chart.addLineSeries({
-        color: '#06b6d4',
-        lineWidth: 1.5,
-        lineStyle: window.LightweightCharts.LineStyle.Dashed,
-        title: 'SMA 20',
-      });
-      smaSeries.setData(smaPoints);
-    }
-
-    // Add Volume Histogram at Bottom
-    const volumeSeries = chart.addHistogramSeries({
-      priceFormat: { type: 'volume' },
-      priceScaleId: '',
-    });
-    volumeSeries.priceScale().applyOptions({
-      scaleMargins: {
-        top: 0.82,
-        bottom: 0,
-      },
-    });
-    volumeSeries.setData(chartData.series.map(s => ({
-      time: s.time,
-      value: s.volume,
-      color: s.close >= s.open ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)',
-    })));
-
-    chart.timeScale().fitContent();
-
-    // Setup Live TradingView OHLC Status Bar
-    const tvTitle = document.getElementById('tvBarTitle');
-    const tvOpen = document.getElementById('tvOpen');
-    const tvHigh = document.getElementById('tvHigh');
-    const tvLow = document.getElementById('tvLow');
-    const tvClose = document.getElementById('tvClose');
-    const tvChg = document.getElementById('tvChg');
-    const tvDate = document.getElementById('tvDate');
-
-    const lastCandle = chartData.series[chartData.series.length - 1];
-    const updateOhlcDisplay = (c) => {
-      const candle = c || lastCandle;
-      if (!candle) return;
-      if (tvTitle) tvTitle.textContent = `${title} (${period})`;
-      if (tvOpen) tvOpen.textContent = `${Utils.formatNumber(candle.open)} ${unitLabel}`;
-      if (tvHigh) tvHigh.textContent = `${Utils.formatNumber(candle.high)} ${unitLabel}`;
-      if (tvLow) tvLow.textContent = `${Utils.formatNumber(candle.low)} ${unitLabel}`;
-      if (tvClose) {
-        tvClose.textContent = `${Utils.formatNumber(candle.close)} ${unitLabel}`;
-        tvClose.className = `tv-v ${candle.close >= candle.open ? 'up' : 'down'}`;
-      }
-      if (tvChg) {
-        const diff = candle.close - candle.open;
-        const pct = candle.open > 0 ? ((diff / candle.open) * 100).toFixed(2) : '۰.۰';
-        tvChg.textContent = `${diff >= 0 ? '+' : ''}${pct}٪`;
-        tvChg.className = `tv-v ${diff >= 0 ? 'up' : 'down'}`;
-      }
-      if (tvDate) tvDate.textContent = candle.time;
-    };
-
-    updateOhlcDisplay(lastCandle);
-
-    chart.subscribeCrosshairMove((param) => {
-      if (!param || !param.time || !param.seriesData) {
-        updateOhlcDisplay(lastCandle);
-        return;
-      }
-      const data = param.seriesData.get(mainSeries);
-      if (data) {
-        const ohlc = data.open !== undefined ? data : { open: data.value, high: data.value, low: data.value, close: data.value, time: param.time };
-        ohlc.time = param.time;
-        updateOhlcDisplay(ohlc);
-      }
-    });
-
-    // Auto resize
-    if (!window._tvResizeAttached) {
-      window._tvResizeAttached = true;
-      window.addEventListener('resize', () => {
-        const c = document.getElementById('tvChartContainer');
-        if (AppState.tvChart && c) {
-          AppState.tvChart.applyOptions({
-            width: c.clientWidth,
-            height: c.clientHeight,
-          });
-        }
-      });
-    }
-  },
-
-  renderAnalysisPanel() {
     const chartData = AppState.lastChartData;
-    if (!chartData) return;
+
 
     // Update Top Score & Sentiment
     const scoreVal = document.getElementById('analysisScoreVal');
@@ -1889,7 +1652,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   UI.renderOverviewCards();
   UI.renderMarketBoard();
   UI.renderPortfolio();
-  UI.renderChart();
+  UI.renderAnalysisPanel();
   UI.renderScenario();
   UI.renderCalculator();
   UI.renderAssetSwapper();
@@ -1909,39 +1672,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Board Search
   document.getElementById('boardSearchInput').addEventListener('input', UI.renderMarketBoard);
 
-  // Chart Controls
-  document.getElementById('chartAssetSelect').addEventListener('change', (e) => {
-    AppState.activeChartMarket = e.target.value;
-    UI.renderChart();
-  });
 
-  document.getElementById('chartTypeGroup').addEventListener('click', (e) => {
-    if (e.target.tagName === 'BUTTON') {
-      document.querySelectorAll('#chartTypeGroup button').forEach(b => b.classList.remove('active'));
-      e.target.classList.add('active');
-      AppState.activeChartType = e.target.dataset.type;
-      UI.renderChart();
-    }
-  });
-
-  document.getElementById('chartPeriodGroup').addEventListener('click', (e) => {
-    if (e.target.tagName === 'BUTTON') {
-      document.querySelectorAll('#chartPeriodGroup button').forEach(b => b.classList.remove('active'));
-      e.target.classList.add('active');
-      AppState.activeChartPeriod = e.target.dataset.period;
-      const pLabel = document.getElementById('chartPeriodLabel');
-      if (pLabel) pLabel.textContent = `در ${e.target.textContent} اخیر`;
-      UI.renderChart();
-    }
-  });
-
-  // TradingView Drawing Tools Toggle
-  document.querySelectorAll('.tv-tool-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tv-tool-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    });
-  });
 
   // Analysis Tabs Controls
   const analysisTabs = document.getElementById('analysisTabsGroup');
@@ -2000,8 +1731,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     UI.renderMarketBoard();
     UI.renderPortfolio();
     UI.renderScenario();
-    UI.renderChart();
-    UI.renderAlerts();
+      UI.renderAlerts();
     UI.checkTriggeredAlerts();
     updateText.textContent = 'زنده (TGJU)';
     const now = new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
