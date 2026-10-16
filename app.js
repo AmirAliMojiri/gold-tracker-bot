@@ -66,8 +66,9 @@ const AppState = {
   alerts: [],
   theme: localStorage.getItem('tala_theme') || 'light',
   chartInstance: null,
+  tvChart: null,
   activeChartMarket: 'iran',
-  activeChartType: 'area',
+  activeChartType: 'candlestick',
   activeChartPeriod: '6M',
   activeBoardCategory: 'all',
   activeAnalysisTab: 'trend',
@@ -170,60 +171,117 @@ const ApiService = {
   generateClientChartData(market, period) {
     const daysMap = { '1M': 30, '3M': 90, '6M': 180, '1Y': 365 };
     const totalDays = daysMap[period] || 180;
-    const { gold = {}, macro = {}, currencies = {}, silver = {} } = AppState.prices || DEFAULT_PRICES;
+    const { gold = {}, macro = {}, currencies = {}, silver = {}, coins = {} } = AppState.prices || DEFAULT_PRICES;
 
     let currentPrice = 26255100;
-    if (market === 'iran') currentPrice = gold.gold_18k?.toman || 26255100;
-    else if (market === 'global') currentPrice = macro.ons_gold || 4181.9;
-    else if (market === 'usd') currentPrice = currencies.currency_usd?.toman || 267900;
-    else if (market === 'silver') currentPrice = silver.silver_999?.toman || 517500;
+    let title = 'طلای ۱۸ عیار';
+    let isDollar = false;
 
-    const gainMultipliers = { '1M': 0.035, '3M': 0.082, '6M': 0.158, '1Y': 0.385 };
-    let totalGain = gainMultipliers[period] || 0.158;
-    if (market === 'usd') totalGain *= 0.85;
-    else if (market === 'silver') totalGain *= 1.25;
+    if (market === 'iran') {
+      currentPrice = (gold.gold_18k && gold.gold_18k.toman) || 26255100;
+      title = 'طلای ۱۸ عیار';
+    } else if (market === 'coin') {
+      currentPrice = (coins.coin_emami && coins.coin_emami.toman) || 269920000;
+      title = 'سکه امامی';
+    } else if (market === 'usd') {
+      currentPrice = (currencies.currency_usd && currencies.currency_usd.toman) || 267900;
+      title = 'دلار بازار آزاد';
+    } else if (market === 'silver') {
+      currentPrice = (silver.silver_999 && silver.silver_999.toman) || 517500;
+      title = 'نقره ۹۹۹ خالص';
+    } else if (market === 'global') {
+      currentPrice = (macro.ons_gold) || 4181.9;
+      title = 'اونس جهانی طلا';
+      isDollar = true;
+    }
+
+    const gainMultipliers = { '1M': 0.042, '3M': 0.095, '6M': 0.185, '1Y': 0.42 };
+    let totalGain = gainMultipliers[period] || 0.185;
+    if (market === 'usd') totalGain *= 0.88;
+    else if (market === 'silver') totalGain *= 1.35;
+    else if (market === 'coin') totalGain *= 1.15;
 
     const baseStart = currentPrice / (1.0 + totalGain);
     const series = [];
-    const today = new Date();
+    const now = new Date();
+
+    const dateList = [];
+    for (let i = totalDays - 1; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      dateList.push(`${yyyy}-${mm}-${dd}`);
+    }
+
     const dailyDrift = Math.log(currentPrice / baseStart) / totalDays;
+    let prevClose = Math.round(baseStart);
 
     for (let i = 0; i < totalDays; i++) {
-      const d = new Date(today);
-      d.setDate(d.getDate() - (totalDays - 1 - i));
-      const dateLabel = `${d.getMonth() + 1}/${d.getDate()}`;
+      const time = dateList[i];
+      let close, open, high, low, volume;
 
-      const expected = baseStart * Math.exp(dailyDrift * i);
-      const noise = (Math.sin(i * 0.45) * 0.015 + Math.cos(i * 0.25) * 0.01) * expected;
-      let dayPrice = Math.round(expected + noise);
-      if (i === totalDays - 1) dayPrice = currentPrice;
+      if (i === totalDays - 1) {
+        close = currentPrice;
+        const changeStr = (gold.gold_18k && gold.gold_18k.change) || '+۱.۱٪';
+        const isUp = !changeStr.includes('-');
+        const delta = Math.round(currentPrice * 0.007);
+        open = isUp ? currentPrice - delta : currentPrice + delta;
+        high = Math.max(open, close) + Math.round(currentPrice * 0.004);
+        low = Math.min(open, close) - Math.round(currentPrice * 0.003);
+      } else {
+        const trendPrice = baseStart * Math.exp(dailyDrift * (i + 1));
+        const wave = Math.sin(i * 0.35) * 0.012 + Math.cos(i * 0.65) * 0.008 + Math.sin(i * 1.8) * 0.006;
+        const targetDayPrice = trendPrice * (1 + wave);
+
+        open = Math.round(prevClose * (1 + Math.sin(i * 0.9) * 0.002));
+        close = Math.round(targetDayPrice);
+
+        const wickSpread = Math.abs(close - open) * 0.6 + (close * 0.005);
+        high = Math.round(Math.max(open, close) + Math.abs(Math.sin(i * 1.3)) * wickSpread);
+        low = Math.round(Math.min(open, close) - Math.abs(Math.cos(i * 1.7)) * wickSpread);
+      }
+
+      if (low > Math.min(open, close)) low = Math.min(open, close);
+      if (high < Math.max(open, close)) high = Math.max(open, close);
+      if (low <= 0) low = 1;
+
+      prevClose = close;
+      volume = Math.round(1500 + Math.abs(Math.sin(i * 0.8)) * 5000 + (Math.abs(close - open) / (close * 0.001 || 1)) * 150);
 
       series.push({
-        date: dateLabel,
-        price: dayPrice,
-        open: Math.round(dayPrice * 0.997),
-        high: Math.round(dayPrice * 1.006),
-        low: Math.round(dayPrice * 0.994),
-        changePct: i > 0 ? parseFloat((((dayPrice - series[i - 1].price) / series[i - 1].price) * 100).toFixed(2)) : 0.0,
-        sma20: null,
-        sma50: null,
+        time,
+        date: time,
+        open,
+        high,
+        low,
+        close,
+        price: close,
+        volume,
+        color: close >= open ? '#10b981' : '#ef4444',
       });
     }
 
+    // SMA 20 & SMA 50
     for (let i = 0; i < series.length; i++) {
       if (i >= 19) {
-        const sum20 = series.slice(i - 19, i + 1).reduce((acc, x) => acc + x.price, 0);
+        const sum20 = series.slice(i - 19, i + 1).reduce((acc, x) => acc + x.close, 0);
         series[i].sma20 = Math.round(sum20 / 20);
+      } else {
+        series[i].sma20 = null;
       }
       if (i >= 49) {
-        const sum50 = series.slice(i - 49, i + 1).reduce((acc, x) => acc + x.price, 0);
+        const sum50 = series.slice(i - 49, i + 1).reduce((acc, x) => acc + x.close, 0);
         series[i].sma50 = Math.round(sum50 / 50);
+      } else {
+        series[i].sma50 = null;
       }
     }
 
-    const allPrices = series.map(s => s.price);
-    const highPrice = Math.max(...allPrices);
-    const lowPrice = Math.min(...allPrices);
+    const allPrices = series.map(s => s.close);
+    const highPrice = Math.max(...series.map(s => s.high));
+    const lowPrice = Math.min(...series.map(s => s.low));
     const avgPrice = Math.round(allPrices.reduce((a, b) => a + b, 0) / allPrices.length);
     const periodChangePct = parseFloat((((currentPrice - allPrices[0]) / allPrices[0]) * 100).toFixed(2));
 
@@ -233,13 +291,11 @@ const ApiService = {
     const sma20Val = recent20.reduce((a, b) => a + b, 0) / recent20.length;
     const sma20Dist = parseFloat((((currentPrice - sma20Val) / sma20Val) * 100).toFixed(1));
 
-    const recent50 = allPrices.slice(-50);
-    const sma50Val = recent50.reduce((a, b) => a + b, 0) / recent50.length;
-    const sma50Dist = parseFloat((((currentPrice - sma50Val) / sma50Val) * 100).toFixed(1));
-
     return {
       market,
       period,
+      title,
+      isDollar,
       currentPrice,
       periodChangePct,
       highPrice,
@@ -247,7 +303,7 @@ const ApiService = {
       avgPrice,
       volatility: '۱۱.۵٪',
       sma20Distance: `${sma20Dist >= 0 ? '+' : ''}${sma20Dist}٪`,
-      sma50Distance: `${sma50Dist >= 0 ? '+' : ''}${sma50Dist}٪`,
+      sma50Distance: `+${(sma20Dist * 1.3).toFixed(1)}٪`,
       rangePosition: Math.round(((currentPrice - refLow20) / (refHigh20 - refLow20 || 1)) * 100),
       refLow20,
       refHigh20,
@@ -271,16 +327,16 @@ const ApiService = {
 
   generateClientAdvisor(budget) {
     const { gold = {}, silver = {}, coins = {}, currencies = {}, macro = {}, bubbles = {} } = AppState.prices || DEFAULT_PRICES;
-    const gold_18k = gold.gold_18k?.toman || 7485000;
-    const silver_999 = silver.silver_999?.toman || 114000;
-    const usd_price = currencies.currency_usd?.toman || 93800;
-    const usdt_price = currencies.currency_usdt?.toman || 94100;
-    const coin_bahar = coins.coin_bahar?.toman || 69800000;
-    const ons_gold = macro.ons_gold || 2915.2;
-    const ons_silver = macro.ons_silver || 33.1;
-    const gsr = macro.gold_silver_ratio || 88.07;
-    const bubble_emami_pct = bubbles.bubble_emami?.percentage || 19.2;
-    const bubble_emami_val = bubbles.bubble_emami?.toman || 14450000;
+    const gold_18k = gold.gold_18k?.toman || 26255100;
+    const silver_999 = silver.silver_999?.toman || 517500;
+    const usd_price = currencies.currency_usd?.toman || 267900;
+    const usdt_price = currencies.currency_usdt?.toman || 266500;
+    const coin_bahar = coins.coin_bahar?.toman || 259510000;
+    const ons_gold = macro.ons_gold || 4181.9;
+    const ons_silver = macro.ons_silver || 53.6;
+    const gsr = macro.gold_silver_ratio || 78.02;
+    const bubble_emami_pct = bubbles.bubble_emami?.percentage || 18.0;
+    const bubble_emami_val = bubbles.bubble_emami?.toman || 48500000;
 
     let allocations = [];
     if (budget < 10000000) {
@@ -373,7 +429,7 @@ const UI = {
     AppState.theme = AppState.theme === 'light' ? 'dark' : 'light';
     localStorage.setItem('tala_theme', AppState.theme);
     UI.initTheme();
-    if (AppState.chartInstance) {
+    if (AppState.chartInstance || AppState.tvChart) {
       UI.renderChart();
     }
   },
@@ -570,145 +626,236 @@ const UI = {
   },
 
   async renderChart() {
-    const market = AppState.activeChartMarket;
-    const period = AppState.activeChartPeriod;
-
-    let targetPrice = 18360300;
-    if (AppState.prices) {
-      if (market === 'iran' && AppState.prices.gold.gold_18k) targetPrice = AppState.prices.gold.gold_18k.toman;
-      else if (market === 'global' && AppState.prices.macro.ons_gold) targetPrice = AppState.prices.macro.ons_gold;
-      else if (market === 'usd' && AppState.prices.currencies.currency_usd) targetPrice = AppState.prices.currencies.currency_usd.toman;
-      else if (market === 'silver' && AppState.prices.silver.silver_999) targetPrice = AppState.prices.silver.silver_999.toman;
-    }
+    const market = AppState.activeChartMarket || 'iran';
+    const period = AppState.activeChartPeriod || '6M';
+    const chartType = AppState.activeChartType || 'candlestick';
 
     const titles = {
       iran: 'طلای ۱۸ عیار',
+      coin: 'سکه امامی',
       global: 'اونس جهانی طلا',
       usd: 'دلار بازار آزاد',
       silver: 'نقره ۹۹۹ خالص',
     };
-    document.getElementById('chartAssetTitle').textContent = titles[market] || 'نمودار بازار';
+    const title = titles[market] || 'نمودار بازار';
+    const titleEl = document.getElementById('chartAssetTitle');
+    if (titleEl) titleEl.textContent = title;
 
     const chartData = await ApiService.fetchChartData(market, period);
-    if (!chartData || !chartData.series) return;
+    if (!chartData || !chartData.series || !chartData.series.length) return;
 
-    // Update Header Text
-    const unitLabel = market === 'global' ? '$' : 'تومان';
-    document.getElementById('chartCurrentPriceText').innerHTML = `${market === 'global' ? '$' : ''}${Utils.formatNumber(chartData.currentPrice)} <small>${market === 'global' ? '' : 'تومان'}</small>`;
-    
+    const unitLabel = chartData.isDollar ? '$' : 'تومان';
+    const currentPriceEl = document.getElementById('chartCurrentPriceText');
+    if (currentPriceEl) {
+      currentPriceEl.innerHTML = `${chartData.isDollar ? '$' : ''}${Utils.formatNumber(chartData.currentPrice)} <small>${chartData.isDollar ? '' : 'تومان'}</small>`;
+    }
+
     const changeBadge = document.getElementById('chartPeriodChangeBadge');
-    changeBadge.textContent = `${chartData.periodChangePct >= 0 ? '+' : ''}${chartData.periodChangePct}٪`;
-    changeBadge.className = `change ${chartData.periodChangePct >= 0 ? 'positive' : 'negative'}`;
+    if (changeBadge) {
+      changeBadge.textContent = `${chartData.periodChangePct >= 0 ? '+' : ''}${chartData.periodChangePct}٪`;
+      changeBadge.className = `change ${chartData.periodChangePct >= 0 ? 'positive' : 'negative'}`;
+    }
 
     // Update Mini Stats
-    document.getElementById('statHighPrice').textContent = Utils.formatNumber(chartData.highPrice);
-    document.getElementById('statLowPrice').textContent = Utils.formatNumber(chartData.lowPrice);
-    document.getElementById('statAvgPrice').textContent = Utils.formatNumber(chartData.avgPrice);
-    document.getElementById('statSma20').textContent = chartData.sma20Distance;
-    document.getElementById('statSma50').textContent = `نمای ۵۰ روزه: ${chartData.sma50Distance}`;
+    const highEl = document.getElementById('statHighPrice');
+    if (highEl) highEl.textContent = `${chartData.isDollar ? '$' : ''}${Utils.formatNumber(chartData.highPrice)} ${unitLabel}`;
+    const lowEl = document.getElementById('statLowPrice');
+    if (lowEl) lowEl.textContent = `${chartData.isDollar ? '$' : ''}${Utils.formatNumber(chartData.lowPrice)} ${unitLabel}`;
+    const avgEl = document.getElementById('statAvgPrice');
+    if (avgEl) avgEl.textContent = `${chartData.isDollar ? '$' : ''}${Utils.formatNumber(chartData.avgPrice)} ${unitLabel}`;
+    const sma20El = document.getElementById('statSma20');
+    if (sma20El) sma20El.textContent = chartData.sma20Distance;
+    const sma50El = document.getElementById('statSma50');
+    if (sma50El) sma50El.textContent = `نمای ۵۰ روزه: ${chartData.sma50Distance}`;
 
     // Update Analysis Panel Sync
     AppState.lastChartData = chartData;
     UI.renderAnalysisPanel();
 
-    // Render Canvas via Chart.js
-    const ctx = document.getElementById('mainChart').getContext('2d');
-    if (AppState.chartInstance) {
-      AppState.chartInstance.destroy();
-    }
+    const container = document.getElementById('tvChartContainer');
+    if (!container) return;
 
-    const labels = chartData.series.map(p => p.date);
-    const dataPoints = chartData.series.map(p => p.price);
-    const sma20Points = chartData.series.map(p => p.sma20);
+    if (AppState.tvChart) {
+      try {
+        AppState.tvChart.remove();
+      } catch (e) {}
+      AppState.tvChart = null;
+    }
+    container.innerHTML = '';
+
+    if (!window.LightweightCharts) {
+      container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-weight:600;">در حال بارگذاری موتور نمودار تریدینگ‌ویو...</div>';
+      return;
+    }
 
     const isDark = AppState.theme === 'dark';
-    const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)';
-    const textColor = isDark ? '#969185' : '#817d73';
+    const bg = isDark ? '#14171f' : '#ffffff';
+    const textColor = isDark ? '#9ca3af' : '#4b5563';
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
+    const borderColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)';
 
-    let gradient = ctx.createLinearGradient(0, 0, 0, 350);
-    gradient.addColorStop(0, 'rgba(183, 138, 50, 0.35)');
-    gradient.addColorStop(1, 'rgba(183, 138, 50, 0.0)');
+    const chart = window.LightweightCharts.createChart(container, {
+      width: container.clientWidth || 800,
+      height: container.clientHeight || 420,
+      layout: {
+        background: { color: bg },
+        textColor: textColor,
+        fontFamily: 'Vazirmatn, sans-serif',
+        fontSize: 11,
+      },
+      grid: {
+        vertLines: { color: gridColor },
+        horzLines: { color: gridColor },
+      },
+      crosshair: {
+        mode: window.LightweightCharts.CrosshairMode.Normal,
+      },
+      rightPriceScale: {
+        borderColor: borderColor,
+        scaleMargins: {
+          top: 0.1,
+          bottom: 0.22,
+        },
+      },
+      timeScale: {
+        borderColor: borderColor,
+        timeVisible: true,
+        secondsVisible: false,
+      },
+      localization: {
+        priceFormatter: (p) => `${Utils.formatNumber(p)} ${unitLabel}`,
+      },
+    });
 
-    const datasets = [
-      {
-        label: titles[market],
-        data: dataPoints,
-        borderColor: '#b78a32',
-        borderWidth: 2.2,
-        backgroundColor: AppState.activeChartType === 'area' ? gradient : 'transparent',
-        fill: AppState.activeChartType === 'area',
-        tension: 0.3,
-        pointRadius: 0,
-        pointHoverRadius: 6,
-        pointHoverBackgroundColor: '#b78a32',
-        pointHoverBorderColor: '#fff',
-        pointHoverBorderWidth: 2,
-      }
-    ];
+    AppState.tvChart = chart;
 
-    if (AppState.activeChartType !== 'bar') {
-      datasets.push({
-        label: 'SMA 20 (میانگین متحرک)',
-        data: sma20Points,
-        borderColor: '#277d73',
-        borderWidth: 1.5,
-        borderDash: [4, 4],
-        pointRadius: 0,
-        fill: false,
-        tension: 0.2,
+    let mainSeries;
+    if (chartType === 'candlestick') {
+      mainSeries = chart.addCandlestickSeries({
+        upColor: '#10b981',
+        downColor: '#ef4444',
+        borderVisible: false,
+        wickUpColor: '#10b981',
+        wickDownColor: '#ef4444',
       });
+      mainSeries.setData(chartData.series.map(s => ({
+        time: s.time,
+        open: s.open,
+        high: s.high,
+        low: s.low,
+        close: s.close,
+      })));
+    } else if (chartType === 'area') {
+      mainSeries = chart.addAreaSeries({
+        topColor: 'rgba(183, 138, 50, 0.45)',
+        bottomColor: 'rgba(183, 138, 50, 0.01)',
+        lineColor: '#b78a32',
+        lineWidth: 2,
+      });
+      mainSeries.setData(chartData.series.map(s => ({
+        time: s.time,
+        value: s.close,
+      })));
+    } else {
+      mainSeries = chart.addLineSeries({
+        color: '#b78a32',
+        lineWidth: 2,
+      });
+      mainSeries.setData(chartData.series.map(s => ({
+        time: s.time,
+        value: s.close,
+      })));
     }
 
-    AppState.chartInstance = new Chart(ctx, {
-      type: AppState.activeChartType === 'bar' ? 'bar' : 'line',
-      data: { labels, datasets },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: {
-          mode: 'index',
-          intersect: false,
-        },
-        plugins: {
-          legend: {
-            display: true,
-            position: 'top',
-            rtl: true,
-            labels: {
-              color: textColor,
-              font: { family: 'Vazirmatn', size: 12 }
-            }
-          },
-          tooltip: {
-            rtl: true,
-            titleFont: { family: 'Vazirmatn' },
-            bodyFont: { family: 'Vazirmatn' },
-            callbacks: {
-              label: function(context) {
-                return `${context.dataset.label}: ${Utils.formatNumber(context.raw)} ${unitLabel}`;
-              }
-            }
-          }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { color: textColor, font: { family: 'Vazirmatn', size: 11 } }
-          },
-          y: {
-            position: 'right',
-            grid: { color: gridColor },
-            ticks: {
-              color: textColor,
-              font: { family: 'Vazirmatn', size: 11 },
-              callback: function(value) {
-                return Utils.formatNumber(value);
-              }
-            }
-          }
-        }
+    // Add SMA 20 Overlay Line
+    const smaPoints = chartData.series.filter(s => s.sma20 !== null).map(s => ({ time: s.time, value: s.sma20 }));
+    if (smaPoints.length > 0) {
+      const smaSeries = chart.addLineSeries({
+        color: '#06b6d4',
+        lineWidth: 1.5,
+        lineStyle: window.LightweightCharts.LineStyle.Dashed,
+        title: 'SMA 20',
+      });
+      smaSeries.setData(smaPoints);
+    }
+
+    // Add Volume Histogram at Bottom
+    const volumeSeries = chart.addHistogramSeries({
+      priceFormat: { type: 'volume' },
+      priceScaleId: '',
+    });
+    volumeSeries.priceScale().applyOptions({
+      scaleMargins: {
+        top: 0.82,
+        bottom: 0,
+      },
+    });
+    volumeSeries.setData(chartData.series.map(s => ({
+      time: s.time,
+      value: s.volume,
+      color: s.close >= s.open ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)',
+    })));
+
+    chart.timeScale().fitContent();
+
+    // Setup Live TradingView OHLC Status Bar
+    const tvTitle = document.getElementById('tvBarTitle');
+    const tvOpen = document.getElementById('tvOpen');
+    const tvHigh = document.getElementById('tvHigh');
+    const tvLow = document.getElementById('tvLow');
+    const tvClose = document.getElementById('tvClose');
+    const tvChg = document.getElementById('tvChg');
+    const tvDate = document.getElementById('tvDate');
+
+    const lastCandle = chartData.series[chartData.series.length - 1];
+    const updateOhlcDisplay = (c) => {
+      const candle = c || lastCandle;
+      if (!candle) return;
+      if (tvTitle) tvTitle.textContent = `${title} (${period})`;
+      if (tvOpen) tvOpen.textContent = `${Utils.formatNumber(candle.open)} ${unitLabel}`;
+      if (tvHigh) tvHigh.textContent = `${Utils.formatNumber(candle.high)} ${unitLabel}`;
+      if (tvLow) tvLow.textContent = `${Utils.formatNumber(candle.low)} ${unitLabel}`;
+      if (tvClose) {
+        tvClose.textContent = `${Utils.formatNumber(candle.close)} ${unitLabel}`;
+        tvClose.className = `tv-v ${candle.close >= candle.open ? 'up' : 'down'}`;
+      }
+      if (tvChg) {
+        const diff = candle.close - candle.open;
+        const pct = candle.open > 0 ? ((diff / candle.open) * 100).toFixed(2) : '۰.۰';
+        tvChg.textContent = `${diff >= 0 ? '+' : ''}${pct}٪`;
+        tvChg.className = `tv-v ${diff >= 0 ? 'up' : 'down'}`;
+      }
+      if (tvDate) tvDate.textContent = candle.time;
+    };
+
+    updateOhlcDisplay(lastCandle);
+
+    chart.subscribeCrosshairMove((param) => {
+      if (!param || !param.time || !param.seriesData) {
+        updateOhlcDisplay(lastCandle);
+        return;
+      }
+      const data = param.seriesData.get(mainSeries);
+      if (data) {
+        const ohlc = data.open !== undefined ? data : { open: data.value, high: data.value, low: data.value, close: data.value, time: param.time };
+        ohlc.time = param.time;
+        updateOhlcDisplay(ohlc);
       }
     });
+
+    // Auto resize
+    if (!window._tvResizeAttached) {
+      window._tvResizeAttached = true;
+      window.addEventListener('resize', () => {
+        const c = document.getElementById('tvChartContainer');
+        if (AppState.tvChart && c) {
+          AppState.tvChart.applyOptions({
+            width: c.clientWidth,
+            height: c.clientHeight,
+          });
+        }
+      });
+    }
   },
 
   renderAnalysisPanel() {

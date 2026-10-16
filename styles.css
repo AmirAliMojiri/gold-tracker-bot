@@ -798,15 +798,75 @@ body {
   font-weight: 700;
 }
 
+/* TradingView Style OHLC Bar */
+.tv-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+  font-family: inherit;
+  font-size: 0.85rem;
+}
+
+.tv-bar-title {
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tv-bar-ohlc {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.tv-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tv-k {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.tv-v {
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.tv-v.up {
+  color: #10b981;
+}
+
+.tv-v.down {
+  color: #ef4444;
+}
+
 /* Chart Canvas Area */
 .chart-wrap {
-  height: 380px;
+  height: 430px;
   width: 100%;
   position: relative;
   margin-bottom: 20px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--line);
 }
 
-canvas#mainChart {
+#tvChartContainer {
   width: 100% !important;
   height: 100% !important;
 }
@@ -1883,7 +1943,7 @@ body.menu-open {
     gap: 8px;
   }
   .chart-wrap {
-    height: 240px;
+    height: 340px;
   }
   .stats-row {
     grid-template-columns: repeat(2, 1fr) !important;
