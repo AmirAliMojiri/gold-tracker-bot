@@ -6,56 +6,56 @@
 // Application State
 const DEFAULT_PRICES = {
   gold: {
-    gold_18k: { title: 'طلای ۱۸ عیار', toman: 26255100, rial: 262551000, low_toman: 26180000, high_toman: 26350000, change: '+۱.۱٪', time: '۱۴:۳۰' },
-    gold_24k: { title: 'طلای ۲۴ عیار', toman: 35006800, rial: 350068000, low_toman: 34900000, high_toman: 35120000, change: '+۱.۱٪', time: '۱۴:۳۰' },
-    gold_used: { title: 'طلای دست دوم', toman: 25860000, rial: 258600000, low_toman: 25780000, high_toman: 25950000, change: '+۱.۰٪', time: '۱۴:۳۰' },
-    mesghal: { title: 'مثقال طلا', toman: 113735000, rial: 1137350000, low_toman: 113400000, high_toman: 114100000, change: '+۱.۲٪', time: '۱۴:۳۰' },
-    gold_melted: { title: 'آبشده نقدی', toman: 113735000, rial: 1137350000, low_toman: 113400000, high_toman: 114100000, change: '+۱.۲٪', time: '۱۴:۳۰' },
+    gold_18k: { title: 'طلای ۱۸ عیار', toman: 5480000, rial: 54800000, low_toman: 5420000, high_toman: 5520000, change: '+۱.۱٪', time: '۱۶:۴۵' },
+    gold_24k: { title: 'طلای ۲۴ عیار', toman: 7305000, rial: 73050000, low_toman: 7240000, high_toman: 7360000, change: '+۱.۱٪', time: '۱۶:۴۵' },
+    gold_used: { title: 'طلای دست دوم', toman: 5405000, rial: 54050000, low_toman: 5350000, high_toman: 5450000, change: '+۱.۰٪', time: '۱۶:۴۵' },
+    mesghal: { title: 'مثقال طلا', toman: 23740000, rial: 237400000, low_toman: 23500000, high_toman: 23900000, change: '+۱.۲٪', time: '۱۶:۴۵' },
+    gold_melted: { title: 'آبشده نقدی', toman: 23740000, rial: 237400000, low_toman: 23500000, high_toman: 23900000, change: '+۱.۲٪', time: '۱۶:۴۵' },
   },
   silver: {
-    silver_999: { title: 'گرم نقره ۹۹۹ (خالص/شمش)', toman: 517500, rial: 5175000, low_toman: 512000, high_toman: 521000, change: '+۱.۸٪', time: '۱۴:۳۰' },
-    silver_925: { title: 'گرم نقره ۹۲۵ (استرلینگ)', toman: 479000, rial: 4790000, low_toman: 474000, high_toman: 482000, change: '+۱.۷٪', time: '۱۴:۳۰' },
+    silver_999: { title: 'گرم نقره ۹۹۹ (خالص/شمش)', toman: 108500, rial: 1085000, low_toman: 106500, high_toman: 109800, change: '+۱.۸٪', time: '۱۶:۴۵' },
+    silver_925: { title: 'گرم نقره ۹۲۵ (استرلینگ)', toman: 100500, rial: 1005000, low_toman: 98500, high_toman: 101800, change: '+۱.۷٪', time: '۱۶:۴۵' },
   },
   coins: {
-    coin_emami: { title: 'سکه امامی', toman: 269920000, rial: 2699200000, low_toman: 268500000, high_toman: 270800000, change: '+۰.۸٪', time: '۱۴:۳۰' },
-    coin_bahar: { title: 'سکه بهار آزادی', toman: 259510000, rial: 2595100000, low_toman: 258000000, high_toman: 260500000, change: '+۰.۷٪', time: '۱۴:۳۰' },
-    coin_half_new: { title: 'نیم سکه', toman: 141200000, rial: 1412000000, low_toman: 140000000, high_toman: 142000000, change: '+۰.۹٪', time: '۱۴:۳۰' },
-    coin_rob_new: { title: 'ربع سکه', toman: 76100000, rial: 761000000, low_toman: 75200000, high_toman: 76800000, change: '+۱.۰٪', time: '۱۴:۳۰' },
-    coin_grami: { title: 'سکه گرمی', toman: 37500000, rial: 375000000, low_toman: 37000000, high_toman: 37900000, change: '+۰.۵٪', time: '۱۴:۳۰' },
-    coin_emami_old: { title: 'تمام سکه طرح قدیم (قبل ۸۶)', toman: 254000000, rial: 2540000000, low_toman: 252500000, high_toman: 255500000, change: '+۰.۶٪', time: '۱۴:۳۰' },
-    coin_half_old: { title: 'نیم سکه طرح قدیم (قبل ۸۶)', toman: 136000000, rial: 1360000000, low_toman: 134500000, high_toman: 137000000, change: '+۰.۷٪', time: '۱۴:۳۰' },
-    coin_rob_old: { title: 'ربع سکه طرح قدیم (قبل ۸۶)', toman: 72500000, rial: 725000000, low_toman: 71500000, high_toman: 73200000, change: '+۰.۸٪', time: '۱۴:۳۰' },
+    coin_emami: { title: 'سکه امامی', toman: 67800000, rial: 678000000, low_toman: 67200000, high_toman: 68300000, change: '+۰.۸٪', time: '۱۶:۴۵' },
+    coin_bahar: { title: 'سکه بهار آزادی', toman: 61900000, rial: 619000000, low_toman: 61300000, high_toman: 62400000, change: '+۰.۷٪', time: '۱۶:۴۵' },
+    coin_half_new: { title: 'نیم سکه', toman: 36800000, rial: 368000000, low_toman: 36300000, high_toman: 37200000, change: '+۰.۹٪', time: '۱۶:۴۵' },
+    coin_rob_new: { title: 'ربع سکه', toman: 20500000, rial: 205000000, low_toman: 20200000, high_toman: 20800000, change: '+۱.۰٪', time: '۱۶:۴۵' },
+    coin_grami: { title: 'سکه گرمی', toman: 9800000, rial: 98000000, low_toman: 9650000, high_toman: 9950000, change: '+۰.۵٪', time: '۱۶:۴۵' },
+    coin_emami_old: { title: 'تمام سکه طرح قدیم (قبل ۸۶)', toman: 59500000, rial: 595000000, low_toman: 58900000, high_toman: 60100000, change: '+۰.۶٪', time: '۱۶:۴۵' },
+    coin_half_old: { title: 'نیم سکه طرح قدیم (قبل ۸۶)', toman: 34000000, rial: 340000000, low_toman: 33500000, high_toman: 34500000, change: '+۰.۷٪', time: '۱۶:۴۵' },
+    coin_rob_old: { title: 'ربع سکه طرح قدیم (قبل ۸۶)', toman: 18500000, rial: 185000000, low_toman: 18200000, high_toman: 18800000, change: '+۰.۸٪', time: '۱۶:۴۵' },
   },
   bubbles: {
-    bubble_emami: { title: 'حباب سکه امامی', toman: 48500000, rial: 485000000, percentage: 18.0, time: '۱۴:۳۰' },
-    bubble_bahar: { title: 'حباب بهار آزادی', toman: 38100000, rial: 381000000, percentage: 14.7, time: '۱۴:۳۰' },
-    bubble_nim: { title: 'حباب نیم سکه', toman: 30500000, rial: 305000000, percentage: 21.6, time: '۱۴:۳۰' },
-    bubble_rob: { title: 'حباب ربع سکه', toman: 20750000, rial: 207500000, percentage: 27.3, time: '۱۴:۳۰' },
-    bubble_grami: { title: 'حباب سکه گرمی', toman: 9800000, rial: 98000000, percentage: 26.1, time: '۱۴:۳۰' },
+    bubble_emami: { title: 'حباب سکه امامی', toman: 12800000, rial: 128000000, percentage: 18.9, time: '۱۶:۴۵' },
+    bubble_bahar: { title: 'حباب بهار آزادی', toman: 8200000, rial: 82000000, percentage: 13.2, time: '۱۶:۴۵' },
+    bubble_nim: { title: 'حباب نیم سکه', toman: 9300000, rial: 93000000, percentage: 25.2, time: '۱۶:۴۵' },
+    bubble_rob: { title: 'حباب ربع سکه', toman: 6800000, rial: 68000000, percentage: 33.1, time: '۱۶:۴۵' },
+    bubble_grami: { title: 'حباب سکه گرمی', toman: 3900000, rial: 39000000, percentage: 39.8, time: '۱۶:۴۵' },
   },
   currencies: {
-    currency_usd: { title: 'دلار آمریکا', toman: 267900, rial: 2679000, low_toman: 266500, high_toman: 268800, change: '+۰.۵٪', time: '۱۴:۳۰' },
-    currency_usdt: { title: 'تتر (USDT)', toman: 266500, rial: 2665000, low_toman: 265200, high_toman: 267200, change: '+۰.۴٪', time: '۱۴:۳۰' },
-    currency_eur: { title: 'یورو', toman: 300280, rial: 3002800, low_toman: 298500, high_toman: 301500, change: '+۰.۳٪', time: '۱۴:۳۰' },
-    currency_aed: { title: 'درهم امارات', toman: 73060, rial: 730600, low_toman: 72700, high_toman: 73350, change: '+۰.۵٪', time: '۱۴:۳۰' },
-    currency_gbp: { title: 'پوند انگلیس', toman: 348000, rial: 3480000, low_toman: 346000, high_toman: 349500, change: '+۰.۲٪', time: '۱۴:۳۰' },
-    currency_try: { title: 'لیر ترکیه', toman: 7750, rial: 77500, low_toman: 7700, high_toman: 7800, change: '-۰.۱٪', time: '۱۴:۳۰' },
-    currency_cad: { title: 'دلار کانادا', toman: 191000, rial: 1910000, low_toman: 189500, high_toman: 192000, change: '+۰.۴٪', time: '۱۴:۳۰' },
-    currency_aud: { title: 'دلار استرالیا', toman: 174500, rial: 1745000, low_toman: 173000, high_toman: 175500, change: '+۰.۳٪', time: '۱۴:۳۰' },
-    currency_iqd: { title: '۱۰۰ دینار عراق', toman: 20450, rial: 204500, low_toman: 20300, high_toman: 20600, change: '۰.۰٪', time: '۱۴:۳۰' },
+    currency_usd: { title: 'دلار آمریکا', toman: 72800, rial: 728000, low_toman: 72300, high_toman: 73200, change: '+۰.۵٪', time: '۱۶:۴۵' },
+    currency_usdt: { title: 'تتر (USDT)', toman: 73100, rial: 731000, low_toman: 72600, high_toman: 73500, change: '+۰.۴٪', time: '۱۶:۴۵' },
+    currency_eur: { title: 'یورو', toman: 78500, rial: 785000, low_toman: 78000, high_toman: 79000, change: '+۰.۳٪', time: '۱۶:۴۵' },
+    currency_aed: { title: 'درهم امارات', toman: 19850, rial: 198500, low_toman: 19700, high_toman: 20000, change: '+۰.۵٪', time: '۱۶:۴۵' },
+    currency_gbp: { title: 'پوند انگلیس', toman: 92400, rial: 924000, low_toman: 91800, high_toman: 93000, change: '+۰.۲٪', time: '۱۶:۴۵' },
+    currency_try: { title: 'لیر ترکیه', toman: 2080, rial: 20800, low_toman: 2060, high_toman: 2100, change: '-۰.۱٪', time: '۱۶:۴۵' },
+    currency_cad: { title: 'دلار کانادا', toman: 51500, rial: 515000, low_toman: 51000, high_toman: 52000, change: '+۰.۴٪', time: '۱۶:۴۵' },
+    currency_aud: { title: 'دلار استرالیا', toman: 47200, rial: 472000, low_toman: 46800, high_toman: 47600, change: '+۰.۳٪', time: '۱۶:۴۵' },
+    currency_iqd: { title: '۱۰۰ دینار عراق', toman: 5550, rial: 55500, low_toman: 5500, high_toman: 5600, change: '۰.۰٪', time: '۱۶:۴۵' },
   },
   parsian: {
-    '0.100': { title: 'سکه پارسیان ۰.۱۰۰ گرم', weight: 0.1, toman: 3750000, rial: 37500000, low_toman: 3720000, high_toman: 3780000, change: '+۱.۱٪', time: '۱۴:۳۰' },
-    '0.200': { title: 'سکه پارسیان ۰.۲۰۰ گرم', weight: 0.2, toman: 6350000, rial: 63500000, low_toman: 6300000, high_toman: 6400000, change: '+۱.۱٪', time: '۱۴:۳۰' },
-    '0.300': { title: 'سکه پارسیان ۰.۳۰۰ گرم', weight: 0.3, toman: 8950000, rial: 89500000, low_toman: 8880000, high_toman: 9020000, change: '+۱.۱٪', time: '۱۴:۳۰' },
-    '0.500': { title: 'سکه پارسیان ۰.۵۰۰ گرم', weight: 0.5, toman: 14150000, rial: 141500000, low_toman: 14050000, high_toman: 14250000, change: '+۱.۱٪', time: '۱۴:۳۰' },
-    '1.000': { title: 'سکه پارسیان ۱.۰۰۰ گرم', weight: 1.0, toman: 27150000, rial: 271500000, low_toman: 26950000, high_toman: 27350000, change: '+۱.۱٪', time: '۱۴:۳۰' },
-    '1.500': { title: 'سکه پارسیان ۱.۵۰۰ گرم', weight: 1.5, toman: 40150000, rial: 401500000, low_toman: 39850000, high_toman: 40450000, change: '+۱.۱٪', time: '۱۴:۳۰' },
+    '0.100': { title: 'سکه پارسیان ۰.۱۰۰ گرم', weight: 0.1, toman: 680000, rial: 6800000, low_toman: 670000, high_toman: 690000, change: '+۱.۱٪', time: '۱۶:۴۵' },
+    '0.200': { title: 'سکه پارسیان ۰.۲۰۰ گرم', weight: 0.2, toman: 1250000, rial: 12500000, low_toman: 1230000, high_toman: 1270000, change: '+۱.۱٪', time: '۱۶:۴۵' },
+    '0.300': { title: 'سکه پارسیان ۰.۳۰۰ گرم', weight: 0.3, toman: 1820000, rial: 18200000, low_toman: 1800000, high_toman: 1840000, change: '+۱.۱٪', time: '۱۶:۴۵' },
+    '0.500': { title: 'سکه پارسیان ۰.۵۰۰ گرم', weight: 0.5, toman: 2950000, rial: 29500000, low_toman: 2920000, high_toman: 2980000, change: '+۱.۱٪', time: '۱۶:۴۵' },
+    '1.000': { title: 'سکه پارسیان ۱.۰۰۰ گرم', weight: 1.0, toman: 5750000, rial: 57500000, low_toman: 5700000, high_toman: 5800000, change: '+۱.۱٪', time: '۱۶:۴۵' },
+    '1.500': { title: 'سکه پارسیان ۱.۵۰۰ گرم', weight: 1.5, toman: 8550000, rial: 85500000, low_toman: 8480000, high_toman: 8620000, change: '+۱.۱٪', time: '۱۶:۴۵' },
   },
   macro: {
-    ons_gold: 4181.9,
-    ons_silver: 53.6,
-    gold_silver_ratio: 78.02,
+    ons_gold: 2785.4,
+    ons_silver: 34.2,
+    gold_silver_ratio: 81.44,
   },
   updated_at: 'زنده (لحظه‌ای)',
 };
@@ -173,35 +173,64 @@ const ApiService = {
     const totalDays = daysMap[period] || 180;
     const { gold = {}, macro = {}, currencies = {}, silver = {}, coins = {} } = AppState.prices || DEFAULT_PRICES;
 
-    let currentPrice = 26255100;
+    let currentPrice = 5480000;
     let title = 'طلای ۱۸ عیار';
     let isDollar = false;
 
+    // Realistic historical start prices based on actual Iranian market data
+    const historicalBases = {
+      iran: {
+        '1M': 5100000,
+        '3M': 4350000,
+        '6M': 3650000,
+        '1Y': 2850000,
+      },
+      coin: {
+        '1M': 59800000,
+        '3M': 50200000,
+        '6M': 42500000,
+        '1Y': 33000000,
+      },
+      usd: {
+        '1M': 68500,
+        '3M': 63000,
+        '6M': 58500,
+        '1Y': 50500,
+      },
+      silver: {
+        '1M': 98000,
+        '3M': 88000,
+        '6M': 75000,
+        '1Y': 55000,
+      },
+      global: {
+        '1M': 2680.0,
+        '3M': 2505.0,
+        '6M': 2380.0,
+        '1Y': 2050.0,
+      }
+    };
+
     if (market === 'iran') {
-      currentPrice = (gold.gold_18k && gold.gold_18k.toman) || 26255100;
+      currentPrice = (gold.gold_18k && gold.gold_18k.toman) || 5480000;
       title = 'طلای ۱۸ عیار';
     } else if (market === 'coin') {
-      currentPrice = (coins.coin_emami && coins.coin_emami.toman) || 269920000;
+      currentPrice = (coins.coin_emami && coins.coin_emami.toman) || 67800000;
       title = 'سکه امامی';
     } else if (market === 'usd') {
-      currentPrice = (currencies.currency_usd && currencies.currency_usd.toman) || 267900;
+      currentPrice = (currencies.currency_usd && currencies.currency_usd.toman) || 72800;
       title = 'دلار بازار آزاد';
     } else if (market === 'silver') {
-      currentPrice = (silver.silver_999 && silver.silver_999.toman) || 517500;
+      currentPrice = (silver.silver_999 && silver.silver_999.toman) || 108500;
       title = 'نقره ۹۹۹ خالص';
     } else if (market === 'global') {
-      currentPrice = (macro.ons_gold) || 4181.9;
+      currentPrice = (macro.ons_gold) || 2785.4;
       title = 'اونس جهانی طلا';
       isDollar = true;
     }
 
-    const gainMultipliers = { '1M': 0.042, '3M': 0.095, '6M': 0.185, '1Y': 0.42 };
-    let totalGain = gainMultipliers[period] || 0.185;
-    if (market === 'usd') totalGain *= 0.88;
-    else if (market === 'silver') totalGain *= 1.35;
-    else if (market === 'coin') totalGain *= 1.15;
-
-    const baseStart = currentPrice / (1.0 + totalGain);
+    const marketHistory = historicalBases[market] || historicalBases.iran;
+    const baseStart = marketHistory[period] || (currentPrice * 0.82);
     const series = [];
     const now = new Date();
 
@@ -327,16 +356,16 @@ const ApiService = {
 
   generateClientAdvisor(budget) {
     const { gold = {}, silver = {}, coins = {}, currencies = {}, macro = {}, bubbles = {} } = AppState.prices || DEFAULT_PRICES;
-    const gold_18k = gold.gold_18k?.toman || 26255100;
-    const silver_999 = silver.silver_999?.toman || 517500;
-    const usd_price = currencies.currency_usd?.toman || 267900;
-    const usdt_price = currencies.currency_usdt?.toman || 266500;
-    const coin_bahar = coins.coin_bahar?.toman || 259510000;
-    const ons_gold = macro.ons_gold || 4181.9;
-    const ons_silver = macro.ons_silver || 53.6;
-    const gsr = macro.gold_silver_ratio || 78.02;
-    const bubble_emami_pct = bubbles.bubble_emami?.percentage || 18.0;
-    const bubble_emami_val = bubbles.bubble_emami?.toman || 48500000;
+    const gold_18k = gold.gold_18k?.toman || 5480000;
+    const silver_999 = silver.silver_999?.toman || 108500;
+    const usd_price = currencies.currency_usd?.toman || 72800;
+    const usdt_price = currencies.currency_usdt?.toman || 73100;
+    const coin_bahar = coins.coin_bahar?.toman || 61900000;
+    const ons_gold = macro.ons_gold || 2785.4;
+    const ons_silver = macro.ons_silver || 34.2;
+    const gsr = macro.gold_silver_ratio || 81.44;
+    const bubble_emami_pct = bubbles.bubble_emami?.percentage || 18.9;
+    const bubble_emami_val = bubbles.bubble_emami?.toman || 12800000;
 
     let allocations = [];
     if (budget < 10000000) {
@@ -1534,9 +1563,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.querySelectorAll('#chartPeriodGroup button').forEach(b => b.classList.remove('active'));
       e.target.classList.add('active');
       AppState.activeChartPeriod = e.target.dataset.period;
-      document.getElementById('chartPeriodLabel').textContent = `در ${e.target.textContent} اخیر`;
+      const pLabel = document.getElementById('chartPeriodLabel');
+      if (pLabel) pLabel.textContent = `در ${e.target.textContent} اخیر`;
       UI.renderChart();
     }
+  });
+
+  // TradingView Drawing Tools Toggle
+  document.querySelectorAll('.tv-tool-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tv-tool-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
   });
 
   // Analysis Tabs Controls
