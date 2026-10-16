@@ -1262,41 +1262,80 @@ document.addEventListener('DOMContentLoaded', async () => {
     Notification.requestPermission();
   }
 
-  // Mobile menu toggle & backdrop
-  const mobileBtn = document.getElementById('mobileMenuBtn');
+  // Universal Menu Toggle & Sidebar Handling (Desktop + Mobile)
+  const menuBtn = document.getElementById('mobileMenuBtn');
   const sidebar = document.getElementById('sidebar');
   const closeBtn = document.getElementById('sidebarCloseBtn');
   const overlay = document.getElementById('sidebarOverlay');
+  const appShell = document.querySelector('.app-shell');
 
-  const openSidebar = () => {
+  // Load saved desktop preference
+  if (window.innerWidth > 992 && localStorage.getItem('tala_sidebar_collapsed') === 'true') {
+    if (appShell) appShell.classList.add('sidebar-collapsed');
+  }
+
+  const openMobileSidebar = () => {
     if (sidebar) sidebar.classList.add('open');
     if (overlay) overlay.classList.add('active');
     document.body.classList.add('menu-open');
   };
 
-  const closeSidebar = () => {
+  const closeMobileSidebar = () => {
     if (sidebar) sidebar.classList.remove('open');
     if (overlay) overlay.classList.remove('active');
     document.body.classList.remove('menu-open');
   };
 
-  if (mobileBtn) mobileBtn.addEventListener('click', openSidebar);
-  if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
-  if (overlay) overlay.addEventListener('click', closeSidebar);
+  const toggleSidebar = () => {
+    if (window.innerWidth <= 992) {
+      if (sidebar && sidebar.classList.contains('open')) {
+        closeMobileSidebar();
+      } else {
+        openMobileSidebar();
+      }
+    } else {
+      if (appShell) {
+        appShell.classList.toggle('sidebar-collapsed');
+        localStorage.setItem('tala_sidebar_collapsed', appShell.classList.contains('sidebar-collapsed'));
+      }
+    }
+  };
 
-  // Close sidebar on navigation item click (mobile convenience)
+  if (menuBtn) menuBtn.addEventListener('click', toggleSidebar);
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      if (window.innerWidth <= 992) {
+        closeMobileSidebar();
+      } else {
+        if (appShell) {
+          appShell.classList.add('sidebar-collapsed');
+          localStorage.setItem('tala_sidebar_collapsed', 'true');
+        }
+      }
+    });
+  }
+
+  if (overlay) overlay.addEventListener('click', closeMobileSidebar);
+
+  // Close sidebar on navigation item click (on mobile)
   document.querySelectorAll('.sidebar .nav-item, #quickAlertBtn').forEach(el => {
     el.addEventListener('click', () => {
       if (window.innerWidth <= 992) {
-        closeSidebar();
+        closeMobileSidebar();
       }
     });
   });
 
   // Close sidebar on ESC key
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && sidebar && sidebar.classList.contains('open')) {
-      closeSidebar();
+    if (e.key === 'Escape') {
+      if (window.innerWidth <= 992 && sidebar && sidebar.classList.contains('open')) {
+        closeMobileSidebar();
+      } else if (window.innerWidth > 992 && appShell && !appShell.classList.contains('sidebar-collapsed')) {
+        appShell.classList.add('sidebar-collapsed');
+        localStorage.setItem('tala_sidebar_collapsed', 'true');
+      }
     }
   });
 
