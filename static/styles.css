@@ -395,6 +395,10 @@ body {
   border-color: var(--line-strong);
 }
 
+.mobile-menu {
+  display: none;
+}
+
 .update-pill {
   display: flex;
   align-items: center;
@@ -1724,7 +1728,28 @@ canvas#mainChart {
   color: var(--text-muted-2);
 }
 
-/* Responsive Styles */
+/* Responsive Styles & Mobile Optimization */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.active {
+  display: block;
+  opacity: 1;
+}
+
+body.menu-open {
+  overflow: hidden;
+}
+
 @media (max-width: 1024px) {
   .two-column {
     grid-template-columns: 1fr;
@@ -1737,10 +1762,18 @@ canvas#mainChart {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 992px) {
   .sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 290px;
+    max-width: 85vw;
+    z-index: 1000;
     transform: translateX(100%);
-    box-shadow: -4px 0 24px rgba(0,0,0,0.4);
+    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.45);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .sidebar.open {
     transform: translateX(0);
@@ -1749,23 +1782,126 @@ canvas#mainChart {
     display: flex;
   }
   .workspace {
-    margin-right: 0;
+    margin-right: 0 !important;
+    width: 100%;
   }
+  .mobile-menu {
+    display: flex;
+  }
+}
+
+@media (max-width: 768px) {
   .topbar {
-    padding: 12px 16px;
+    padding: 10px 14px;
+    gap: 8px;
   }
-  .content {
-    padding: 16px;
-    gap: 20px;
-  }
-  .panel {
-    padding: 16px;
+  .topbar-right {
+    gap: 10px;
+    min-width: 0;
   }
   .topbar-right h1 {
-    font-size: 1.15rem;
+    font-size: 1.05rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .topbar-right p {
+    display: none;
+  }
+  .topbar-actions {
+    gap: 6px;
+  }
+  .update-pill {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+  }
+  .export-btn {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+  }
+  .icon-btn {
+    width: 34px;
+    height: 34px;
+  }
+  .content {
+    padding: 14px 12px;
+    gap: 18px;
+  }
+  .panel {
+    padding: 14px;
+    border-radius: var(--radius-sm);
+  }
+  .panel-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .chart-head-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
   }
   .chart-wrap {
-    height: 280px;
+    height: 260px;
+  }
+  .summary-grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+  }
+  .summary-card {
+    padding: 14px 12px;
+  }
+  .summary-value {
+    font-size: 1.25rem;
+  }
+  .board-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .board-filters .search-box {
+    width: 100%;
+  }
+  .filter-pills {
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .analysis-tabs {
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .analysis-metric-grid {
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+  }
+  .analysis-metric {
+    padding: 12px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+  .price-line strong {
+    font-size: 1.35rem;
+  }
+  .topbar-right h1 {
+    font-size: 0.95rem;
+  }
+  .export-btn span,
+  .update-pill #updateStatusText {
+    display: none;
+  }
+  .update-pill {
+    padding: 6px;
+  }
+  .export-btn {
+    padding: 6px;
   }
 }
 

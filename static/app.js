@@ -1262,16 +1262,43 @@ document.addEventListener('DOMContentLoaded', async () => {
     Notification.requestPermission();
   }
 
-  // Mobile menu toggle
+  // Mobile menu toggle & backdrop
   const mobileBtn = document.getElementById('mobileMenuBtn');
   const sidebar = document.getElementById('sidebar');
   const closeBtn = document.getElementById('sidebarCloseBtn');
-  if (mobileBtn && sidebar) {
-    mobileBtn.addEventListener('click', () => sidebar.classList.add('open'));
-  }
-  if (closeBtn && sidebar) {
-    closeBtn.addEventListener('click', () => sidebar.classList.remove('open'));
-  }
+  const overlay = document.getElementById('sidebarOverlay');
+
+  const openSidebar = () => {
+    if (sidebar) sidebar.classList.add('open');
+    if (overlay) overlay.classList.add('active');
+    document.body.classList.add('menu-open');
+  };
+
+  const closeSidebar = () => {
+    if (sidebar) sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('active');
+    document.body.classList.remove('menu-open');
+  };
+
+  if (mobileBtn) mobileBtn.addEventListener('click', openSidebar);
+  if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+  if (overlay) overlay.addEventListener('click', closeSidebar);
+
+  // Close sidebar on navigation item click (mobile convenience)
+  document.querySelectorAll('.sidebar .nav-item, #quickAlertBtn').forEach(el => {
+    el.addEventListener('click', () => {
+      if (window.innerWidth <= 992) {
+        closeSidebar();
+      }
+    });
+  });
+
+  // Close sidebar on ESC key
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && sidebar && sidebar.classList.contains('open')) {
+      closeSidebar();
+    }
+  });
 
   // Theme toggle
   document.getElementById('themeToggleBtn').addEventListener('click', UI.toggleTheme);
