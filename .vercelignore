@@ -1,0 +1,13 @@
+# Ignore all Python, SQLite, environment, and container files on Vercel
+*.py
+requirements.txt
+Procfile
+Dockerfile
+.dockerignore
+.env*
+__pycache__
+*.db
+*.bat
+gold_analyzer/
+FFQ/
+handlers/

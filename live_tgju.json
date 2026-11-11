@@ -1,0 +1,436 @@
+{
+  "gold": {
+    "gold_18k": {
+      "title": "طلای ۱۸ عیار",
+      "toman": 26255100,
+      "rial": 262551000,
+      "low_toman": 26039300,
+      "high_toman": 26255800,
+      "change": "(0%) 0",
+      "time": "۲۳ مهر"
+    },
+    "gold_24k": {
+      "title": "طلای ۲۴ عیار",
+      "toman": 35006500,
+      "rial": 350065000,
+      "low_toman": 34718700,
+      "high_toman": 35007400,
+      "change": "(0%) 0",
+      "time": "۲۳ مهر"
+    },
+    "gold_used": {
+      "title": "طلای دست دوم",
+      "toman": 25905056,
+      "rial": 259050560,
+      "low_toman": 25692088,
+      "high_toman": 25905739,
+      "change": "(0%) 0",
+      "time": "۲۳ مهر"
+    },
+    "mesghal": {
+      "title": "مثقال طلا",
+      "toman": 113735000,
+      "rial": 1137350000,
+      "low_toman": 113722000,
+      "high_toman": 113735000,
+      "change": "(0%) 0",
+      "time": "۲۳ مهر"
+    },
+    "gold_melted": {
+      "title": "آبشده نقدی",
+      "toman": 113854000,
+      "rial": 1138540000,
+      "low_toman": 113635000,
+      "high_toman": 114135000,
+      "change": "(0%) 0",
+      "time": "۲۳ مهر"
+    }
+  },
+  "silver": {
+    "silver_925": {
+      "title": "گرم نقره ۹۲۵ (استرلینگ)",
+      "toman": 476191,
+      "rial": 4761910,
+      "low_toman": 476011,
+      "high_toman": 488292,
+      "change": "(0.48%) 22,770",
+      "time": "۱۵:۴۲:۱۸"
+    },
+    "silver_999": {
+      "title": "گرم نقره ۹۹۹ (خالص/شمش)",
+      "toman": 514800,
+      "rial": 5148000,
+      "low_toman": 514610,
+      "high_toman": 527880,
+      "change": "(0.48%) 24,600",
+      "time": "۱۵:۴۴:۱۸"
+    }
+  },
+  "coins": {
+    "coin_emami": {
+      "title": "سکه امامی",
+      "toman": 270940000,
+      "rial": 2709400000,
+      "low_toman": 268090000,
+      "high_toman": 270940000,
+      "change": "(0%) 0",
+      "time": "۲۳ مهر"
+    },
+    "coin_bahar": {
+      "title": "سکه بهار آزادی (طرح قدیم)",
+      "toman": 260110000,
+      "rial": 2601100000,
+      "low_toman": 258480000,
+      "high_toman": 260110000,
+      "change": "(0%) 0",
+      "time": "۲۳ مهر"
+    },
+    "coin_half_new": {
+      "title": "نیم سکه",
+      "toman": 142450000,
+      "rial": 1424500000,
+      "low_toman": 142450000,
+      "high_toman": 142450000,
+      "change": "(0%) 0",
+      "time": "۲۳ مهر"
+    },
+    "coin_rob_new": {
+      "title": "ربع سکه",
+      "toman": 76970000,
+      "rial": 769700000,
+      "low_toman": 76970000,
+      "high_toman": 76970000,
+      "change": "(0%) 0",
+      "time": "۲۳ مهر"
+    },
+    "coin_grami": {
+      "title": "سکه گرمی",
+      "toman": 38200000,
+      "rial": 382000000,
+      "low_toman": 38200000,
+      "high_toman": 38200000,
+      "change": "(0%) 0",
+      "time": "۲۳ مهر"
+    },
+    "coin_emami_old": {
+      "title": "تمام سکه طرح قدیم (قبل ۸۶)",
+      "toman": 260000000,
+      "rial": 2600000000,
+      "low_toman": 260000000,
+      "high_toman": 260000000,
+      "change": "(0%) 0",
+      "time": "۲۳ مهر"
+    },
+    "coin_half_old": {
+      "title": "نیم سکه طرح قدیم (قبل ۸۶)",
+      "toman": 130000000,
+      "rial": 1300000000,
+      "low_toman": 130000000,
+      "high_toman": 130000000,
+      "change": "(0%) 0",
+      "time": "۲۳ مهر"
+    },
+    "coin_rob_old": {
+      "title": "ربع سکه طرح قدیم (قبل ۸۶)",
+      "toman": 66000000,
+      "rial": 660000000,
+      "low_toman": 65000000,
+      "high_toman": 66000000,
+      "change": "(0%) 0",
+      "time": "۲۲ مهر"
+    }
+  },
+  "bubbles": {
+    "bubble_emami": {
+      "title": "حباب سکه امامی",
+      "toman": 8277000,
+      "rial": 82770000,
+      "low_toman": 6161000,
+      "high_toman": 9654000,
+      "change": "(0%) 0",
+      "time": "۲۳ مهر",
+      "percentage": 3.1
+    },
+    "bubble_bahar": {
+      "title": "حباب بهار آزادی",
+      "toman": 2153000,
+      "rial": 21530000,
+      "low_toman": 1010000,
+      "high_toman": 970000,
+      "change": "(0%) 0",
+      "time": "۲۳ مهر",
+      "percentage": 0.8
+    },
+    "bubble_nim": {
+      "title": "حباب نیم سکه",
+      "toman": 11267000,
+      "rial": 112670000,
+      "low_toman": 10571000,
+      "high_toman": 11957000,
+      "change": "(0%) 0",
+      "time": "۲۳ مهر",
+      "percentage": 7.9
+    },
+    "bubble_rob": {
+      "title": "حباب ربع سکه",
+      "toman": 11276000,
+      "rial": 112760000,
+      "low_toman": 10508000,
+      "high_toman": 11621000,
+      "change": "(0%) 0",
+      "time": "۲۳ مهر",
+      "percentage": 14.6
+    },
+    "bubble_grami": {
+      "title": "حباب سکه گرمی",
+      "toman": 5835000,
+      "rial": 58350000,
+      "low_toman": 4925000,
+      "high_toman": 6005000,
+      "change": "(0%) 0",
+      "time": "۲۳ مهر",
+      "percentage": 15.3
+    }
+  },
+  "currencies": {
+    "currency_usd": {
+      "title": "دلار آمریکا",
+      "toman": 267900,
+      "rial": 2679000,
+      "low_toman": 266900,
+      "high_toman": 267900,
+      "change": "(0%) 0",
+      "time": "۲۳ مهر"
+    },
+    "currency_usdt": {
+      "title": "تتر (USDT)",
+      "toman": 263699,
+      "rial": 2636990,
+      "low_toman": 262838,
+      "high_toman": 266198,
+      "change": "(0.95%) 24,970",
+      "time": "۱۶:۴۴:۳۱"
+    },
+    "currency_eur": {
+      "title": "یورو",
+      "toman": 300280,
+      "rial": 3002800,
+      "low_toman": 297510,
+      "high_toman": 300830,
+      "change": "(0%) 0",
+      "time": "۲۳ مهر"
+    },
+    "currency_aed": {
+      "title": "درهم امارات",
+      "toman": 73064,
+      "rial": 730640,
+      "low_toman": 72391,
+      "high_toman": 73072,
+      "change": "(0%) 0",
+      "time": "۲۳ مهر"
+    },
+    "currency_gbp": {
+      "title": "پوند انگلیس",
+      "toman": 354450,
+      "rial": 3544500,
+      "low_toman": 350970,
+      "high_toman": 355110,
+      "change": "(0%) 0",
+      "time": "۲۳ مهر"
+    },
+    "currency_try": {
+      "title": "لیر ترکیه",
+      "toman": 5400,
+      "rial": 54000,
+      "low_toman": 5350,
+      "high_toman": 5400,
+      "change": "(0%) 0",
+      "time": "۲۳ مهر"
+    },
+    "currency_cad": {
+      "title": "دلار کانادا",
+      "toman": 188310,
+      "rial": 1883100,
+      "low_toman": 186440,
+      "high_toman": 188490,
+      "change": "(0%) 0",
+      "time": "۲۳ مهر"
+    },
+    "currency_aud": {
+      "title": "دلار استرالیا",
+      "toman": 184570,
+      "rial": 1845700,
+      "low_toman": 184080,
+      "high_toman": 185800,
+      "change": "(0%) 0",
+      "time": "۲۳ مهر"
+    },
+    "currency_iqd": {
+      "title": "۱۰۰ دینار عراق",
+      "toman": 172,
+      "rial": 1726,
+      "low_toman": 171,
+      "high_toman": 176,
+      "change": "(0%) 0",
+      "time": "۱۶ مهر"
+    }
+  },
+  "parsian": {
+    "0.100": {
+      "title": "سکه پارسیان 0.1 گرم",
+      "weight": 0.1,
+      "toman": 2985000,
+      "rial": 29850000,
+      "low_toman": 2243000,
+      "high_toman": 2985000,
+      "change": "(0%) 0",
+      "time": "۲۳ مهر"
+    },
+    "0.200": {
+      "title": "سکه پارسیان 0.2 گرم",
+      "weight": 0.2,
+      "toman": 5615000,
+      "rial": 56150000,
+      "low_toman": 5615000,
+      "high_toman": 5615000,
+      "change": "(0%) 0",
+      "time": "۲۲ مهر"
+    },
+    "0.300": {
+      "title": "سکه پارسیان 0.3 گرم",
+      "weight": 0.3,
+      "toman": 8245000,
+      "rial": 82450000,
+      "low_toman": 8245000,
+      "high_toman": 8245000,
+      "change": "(0%) 0",
+      "time": "۲۲ مهر"
+    },
+    "0.400": {
+      "title": "سکه پارسیان 0.4 گرم",
+      "weight": 0.4,
+      "toman": 10880000,
+      "rial": 108800000,
+      "low_toman": 10880000,
+      "high_toman": 10880000,
+      "change": "(0%) 0",
+      "time": "۲۲ مهر"
+    },
+    "0.500": {
+      "title": "سکه پارسیان 0.5 گرم",
+      "weight": 0.5,
+      "toman": 13510000,
+      "rial": 135100000,
+      "low_toman": 13510000,
+      "high_toman": 9815000,
+      "change": "(0%) 0",
+      "time": "۱۴:۳۸:۲۱"
+    },
+    "0.600": {
+      "title": "سکه پارسیان 0.6 گرم",
+      "weight": 0.6,
+      "toman": 16140000,
+      "rial": 161400000,
+      "low_toman": 11708000,
+      "high_toman": 16140000,
+      "change": "(0%) 0",
+      "time": "۱۳:۳۴:۲۲"
+    },
+    "0.700": {
+      "title": "سکه پارسیان 0.7 گرم",
+      "weight": 0.7,
+      "toman": 18775000,
+      "rial": 187750000,
+      "low_toman": 18775000,
+      "high_toman": 18775000,
+      "change": "(0%) 0",
+      "time": "۲۲ مهر"
+    },
+    "0.800": {
+      "title": "سکه پارسیان 0.8 گرم",
+      "weight": 0.8,
+      "toman": 21410000,
+      "rial": 214100000,
+      "low_toman": 21410000,
+      "high_toman": 21410000,
+      "change": "(0%) 0",
+      "time": "۲۲ مهر"
+    },
+    "0.900": {
+      "title": "سکه پارسیان 0.9 گرم",
+      "weight": 0.9,
+      "toman": 24040000,
+      "rial": 240400000,
+      "low_toman": 24040000,
+      "high_toman": 24040000,
+      "change": "(0%) 0",
+      "time": "۲۲ مهر"
+    },
+    "1.000": {
+      "title": "سکه پارسیان 1 گرم",
+      "weight": 1.0,
+      "toman": 26820000,
+      "rial": 268200000,
+      "low_toman": 26820000,
+      "high_toman": 26820000,
+      "change": "(0%) 0",
+      "time": "۲۲ مهر"
+    },
+    "1.100": {
+      "title": "سکه پارسیان 1.1 گرم",
+      "weight": 1.1,
+      "toman": 29450000,
+      "rial": 294500000,
+      "low_toman": 21325000,
+      "high_toman": 29450000,
+      "change": "(0%) 0",
+      "time": "۱۴:۳۸:۲۱"
+    },
+    "1.200": {
+      "title": "سکه پارسیان 1.2 گرم",
+      "weight": 1.2,
+      "toman": 32080000,
+      "rial": 320800000,
+      "low_toman": 32080000,
+      "high_toman": 32080000,
+      "change": "(0%) 0",
+      "time": "۲۲ مهر"
+    },
+    "1.300": {
+      "title": "سکه پارسیان 1.3 گرم",
+      "weight": 1.3,
+      "toman": 34720000,
+      "rial": 347200000,
+      "low_toman": 34720000,
+      "high_toman": 34720000,
+      "change": "(0%) 0",
+      "time": "۲۲ مهر"
+    },
+    "1.400": {
+      "title": "سکه پارسیان 1.4 گرم",
+      "weight": 1.4,
+      "toman": 37350000,
+      "rial": 373500000,
+      "low_toman": 37350000,
+      "high_toman": 37350000,
+      "change": "(0%) 0",
+      "time": "۲۲ مهر"
+    },
+    "1.500": {
+      "title": "سکه پارسیان 1.5 گرم",
+      "weight": 1.5,
+      "toman": 39980000,
+      "rial": 399800000,
+      "low_toman": 39980000,
+      "high_toman": 39980000,
+      "change": "(0%) 0",
+      "time": "۲۲ مهر"
+    }
+  },
+  "macro": {
+    "ons_gold": 4168.75,
+    "ons_silver": 57.56,
+    "gold_silver_ratio": 72.42
+  },
+  "updated_at": "2026-10-16 16:57:01"
+}

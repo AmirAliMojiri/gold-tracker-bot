@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.db
+.env
+venv/
+env/
+.idea/
+.vscode/
+test_*.py
+build/
+**/build/
+.gradle/
+*.apk
+*.aab
