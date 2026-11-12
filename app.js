@@ -1008,7 +1008,6 @@ const UI = {
     const { bubbles = {} } = AppState.prices || {};
 
     tableBody.innerHTML = filtered.map(item => {
-      // 1. Column 3: Professional Price Cell with Detailed Unit & Clean Formatting
       const detailedUnit = Utils.getDetailedUnit(item);
       const priceHtml = `
         <div style="line-height:1.35;">
@@ -1016,14 +1015,12 @@ const UI = {
           <div style="font-size:0.73rem; color:var(--text-muted); font-weight:500; margin-top:2px;">${detailedUnit}</div>
         </div>`;
 
-      // 2. Column 4: Clean Daily Change
       let changeHtml = '<span style="color:var(--text-muted); font-size:0.83rem;">بدون نوسان (۰٪)</span>';
       if (item.change && item.change !== '-' && item.change !== '(0%) 0') {
         const isNeg = item.change.includes('-');
         changeHtml = `<span class="change compact ${isNeg ? 'negative' : 'positive'}">${item.change}</span>`;
       }
 
-      // 3. Column 5: Daily Range (Low - High)
       let rangeHtml = '';
       if (item.low_toman && item.high_toman && item.low_toman !== item.high_toman) {
         rangeHtml = `
@@ -1035,7 +1032,6 @@ const UI = {
         rangeHtml = `<span style="color:var(--text-muted-2); font-size:0.82rem;">نرخ پیوسته روز</span>`;
       }
 
-      // 4. Column 6: Estimated Bubble / Spread Column
       let bubbleSpreadHtml = '<span style="color:var(--text-muted-2); font-size:0.82rem;">فاقد حباب (اسپرد پایه)</span>';
       if (item.categoryKey === 'bubbles') {
         bubbleSpreadHtml = `<span class="descriptive-badge negative" style="font-size:0.8rem; font-weight:700;">حباب: ${item.percentage ? item.percentage + '٪' : Utils.formatToman(item.toman)}</span>`;
@@ -1057,7 +1053,6 @@ const UI = {
         bubbleSpreadHtml = `<span style="color:var(--text-muted); font-size:0.82rem;">نرخ اسکناس نقدی</span>`;
       }
 
-      // 5. Column 7: Technical Position in Daily Range
       let positionHtml = '';
       if (item.low_toman && item.high_toman && item.high_toman > item.low_toman) {
         const offset = Math.min(100, Math.max(0, ((item.toman - item.low_toman) / (item.high_toman - item.low_toman)) * 100));
@@ -1088,17 +1083,304 @@ const UI = {
         <tr>
           <td>
             <div class="table-item-name">
+              <span class="item-icon">${item.icon}</span>
+              <b>${item.title}</b>
+            </div>
+          </td>
+          <td><span style="font-size:0.8rem; color:var(--text-muted);">${item.categoryName}</span></td>
+          <td>${priceHtml}</td>
+          <td>${changeHtml}</td>
+          <td>${rangeHtml}</td>
+          <td>${bubbleSpreadHtml}</td>
+          <td style="min-width:140px;">${positionHtml}</td>
+        </tr>
+      `;
+    }).join('');
+  },
+
+  async renderAnalysisPanel() {
+    if (!AppState.lastChartData) {
+      AppState.lastChartData = await ApiService.fetchChartData('iran', '6M');
+    }
+    const chartData = AppState.lastChartData;
+
+
+    // Update Top Score & Sentiment
+    const scoreVal = document.getElementById('analysisScoreVal');
+    const sentimentText = document.getElementById('analysisSentimentText');
+    const sentimentBadge = document.getElementById('analysisSentimentBadge');
+
+    if (scoreVal) scoreVal.textContent = Utils.formatNumber(chartData.score || 75);
+    if (sentimentText) sentimentText.textContent = chartData.sentiment || 'تمایل صعودی ملایم و باثبات';
+    if (sentimentBadge) {
+      sentimentBadge.className = `descriptive-badge ${chartData.periodChangePct >= 0 ? 'positive' : 'negative'}`;
+    }
+
+    const tab = AppState.activeAnalysisTab || 'trend';
+    const container = document.getElementById('analysisTabContent');
+    if (!container) return;
+
+    if (tab === 'trend') {
+      container.innerHTML = `
+        <div class="analysis-metric-grid">
+          <div class="analysis-metric">
+            <span>فاصله از SMA20</span>
+            <strong>${chartData.sma20Distance}</strong>
+            <small>میانگین متحرک ۲۰ روزه کوتاه مدت</small>
+          </div>
+          <div class="analysis-metric">
+            <span>فاصله از SMA50</span>
+            <strong>${chartData.sma50Distance}</strong>
+            <small>جهت‌گیری میان‌مدت و تمایل اصلی</small>
+          </div>
+          <div class="analysis-metric">
+            <span>جایگاه در دامنه دوره</span>
+            <strong>${chartData.rangePosition}٪</strong>
+            <small>۰٪ کف مطلق و ۱۰۰٪ سقف دوره</small>
+          </div>
+          <div class="analysis-metric">
+            <span>کف مرجع دوره</span>
+            <strong>${Utils.formatNumber(chartData.refLow20)}</strong>
+            <small>سطح حمایتی و کف روانی ثبت‌شده</small>
+          </div>
+          <div class="analysis-metric">
+            <span>سقف مرجع دوره</span>
+            <strong>${Utils.formatNumber(chartData.refHigh20)}</strong>
+            <small>سطح مقاومتی و قله تاریخی دوره</small>
+          </div>
+        </div>
+
+        <div class="analysis-insight-cards">
+          <article>
+            <span>۱</span>
+            <p>همبستگی مستقیم میان نرخ ارز آزاد، اونس جهانی طلا و نرخ ریالی؛ در این دوره شیب صعودی پایدار بر نمودار حاکم بوده است.</p>
+          </article>
+          <article>
+            <span>۲</span>
+            <p>قرار گرفتن قیمت بالاتر از خطوط SMA20 و SMA50 تثبیت فاز انبساطی صعودی و اعتبار سطوح تقاضا را نشان می‌دهد.</p>
+          </article>
+          <article>
+            <span>۳</span>
+            <p>نوسانات نزدیک سقف دوره معمولاً همراه با استراحت‌های مقطعی است؛ تثبیت بالاتر از کف ۲۰ روزه محرک تداوم روند است.</p>
+          </article>
+        </div>
+
+        <div class="analysis-method-note">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+          <span>روش‌شناسی روند: قیمت بالاتر از SMA20 همراه با ترند صعودی SMA50 بیانگر قدرت خریداران در تایم‌فریم انتخابی است.</span>
+        </div>
+      `;
+    } else if (tab === 'momentum') {
+      const isPositive = chartData.periodChangePct >= 0;
+      container.innerHTML = `
+        <div class="analysis-metric-grid">
+          <div class="analysis-metric">
+            <span>شتاب بازدهی دوره</span>
+            <strong class="${isPositive ? 'color-pos' : 'color-neg'}">${isPositive ? '+' : ''}${chartData.periodChangePct}٪</strong>
+            <small>تغییر کل بازه انتخابی</small>
+          </div>
+          <div class="analysis-metric">
+            <span>شاخص نوسان‌پذیری (Vol)</span>
+            <strong>${chartData.volatility || '۱۱.۵٪'}</strong>
+            <small>انحراف معیار نوسانات روزانه</small>
+          </div>
+          <div class="analysis-metric">
+            <span>شاخص قدرت نسبی برآوردی</span>
+            <strong>${Math.min(92, Math.max(25, Math.round(50 + (chartData.rangePosition - 50) * 0.6)))} / ۱۰۰</strong>
+            <small>وضعیت اشباع خرید یا فروش</small>
+          </div>
+          <div class="analysis-metric">
+            <span>میانگین قیمت بازه</span>
+            <strong>${Utils.formatNumber(chartData.avgPrice)}</strong>
+            <small>ارزش منصفانه تجمعی (Fair Value)</small>
+          </div>
+          <div class="analysis-metric">
+            <span>دامنه نوسان قله تا کف</span>
+            <strong>${Utils.formatNumber(chartData.highPrice - chartData.lowPrice)}</strong>
+            <small>اختلاف سقف و کف بازه</small>
+          </div>
+        </div>
+
+        <div class="analysis-insight-cards">
+          <article>
+            <span>۱</span>
+            <p>شتاب حرکتی (Momentum) نشان‌دهنده ورود نقدینگی فعال و پیوسته به بازار در دوره‌های صعودی است.</p>
+          </article>
+          <article>
+            <span>۲</span>
+            <p>در سطوح اشباع خرید (RSI بالای ۷۰)، مدیریت حجم خرید و خودداری از ورود یکجا در سقف‌ها از اصول کلیدی کنترل ریسک است.</p>
+          </article>
+          <article>
+            <span>۳</span>
+            <p>افت شتاب بدون اصلاح قیمتی عمیق (واگرایی مخفی) اغلب به معنای دست به دست شدن دارایی‌ها میان معامله‌گران کوتاه‌مدت است.</p>
+          </article>
+        </div>
+
+        <div class="analysis-method-note">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+          <span>شاخص‌های شتاب: پایش بردار سرعت بازدهی و نوسان‌پذیری جهت تمایز رشدهای سالم پایدار از پامپ‌های هیجانی گذرا.</span>
+        </div>
+      `;
+    } else if (tab === 'drivers') {
+      const ons = AppState.prices.macro.ons_gold;
+      const usd = AppState.prices.currencies.currency_usd.toman;
+      const gsr = AppState.prices.macro.gold_silver_ratio;
+
+      container.innerHTML = `
+        <div class="analysis-metric-grid">
+          <div class="analysis-metric">
+            <span>اونس طلا جهانی</span>
+            <strong>$${Utils.formatNumber(ons)}</strong>
+            <small>پیشران بین‌المللی فلزات گرانبها</small>
+          </div>
+          <div class="analysis-metric">
+            <span>دلار آزاد تهران</span>
+            <strong>${Utils.formatNumber(usd)} تومان</strong>
+            <small>پیشران اصلی قیمت داخلی</small>
+          </div>
+          <div class="analysis-metric">
+            <span>نسبت طلا به نقره (GSR)</span>
+            <strong>${gsr}</strong>
+            <small>شاخص چرخه ارزندگی نسبی نقره/طلا</small>
+          </div>
+          <div class="analysis-metric">
+            <span>وزن تأثیر دلار بر طلا</span>
+            <strong>حدود ۶۰٪</strong>
+            <small>برآورد حساسیت بازدهی ریالی</small>
+          </div>
+          <div class="analysis-metric">
+            <span>وزن تأثیر اونس جهانی</span>
+            <strong>حدود ۴۰٪</strong>
+            <small>انتقال تورم و ریسک‌های جهانی</small>
+          </div>
+        </div>
+
+        <div class="analysis-insight-cards">
+          <article>
+            <span>۱</span>
+            <p>فرمول ذاتی طلای داخلی: <b>(اونس جهانی × نرخ دلار) تقسیم بر ضریب تبدیل</b>. حرکت همزمان این دو موتور موجب جهش مرکب می‌شود.</p>
+          </article>
+          <article>
+            <span>۲</span>
+            <p>نسبت طلا به نقره بالای ۸۰ بیانگر ارزش تاریخی بالای طلا و ارزندگی فزاینده نقره برای تنوع‌بخشی بلندمدت است.</p>
+          </article>
+          <article>
+            <span>۳</span>
+            <p>در دوره‌های ثبات نسبی دلار، نوسانات بازار طلا مستقیماً از اخبار فدرال رزرو، بازدهی اوراق قرضه آمریکا و داده‌های اشتغال تغذیه می‌کند.</p>
+          </article>
+        </div>
+
+        <div class="analysis-method-note">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+          <span>موتورهای محرک: تفکیک دقیق وزن اثرگذاری فاکتورهای کلان (دلار آزاد، تورم داخلی و اونس جهانی) بر قیمت‌های نهایی.</span>
+        </div>
+      `;
+    } else if (tab === 'risk') {
+      const emamiBubble = AppState.prices.bubbles.bubble_emami ? AppState.prices.bubbles.bubble_emami.percentage : 19.2;
+      const robBubble = AppState.prices.bubbles.bubble_rob ? AppState.prices.bubbles.bubble_rob.percentage : 39.7;
+
+      container.innerHTML = `
+        <div class="analysis-metric-grid">
+          <div class="analysis-metric">
+            <span>حباب سکه امامی</span>
+            <strong class="${emamiBubble > 20 ? 'color-neg' : 'color-pos'}">${emamiBubble}٪</strong>
+            <small>نسبت اضافه ارزش به ارزش ذاتی</small>
+          </div>
+          <div class="analysis-metric">
+            <span>حباب ربع سکه</span>
+            <strong class="color-neg">${robBubble}٪</strong>
+            <small>حباب بالای هیجانی در قطعات کوچک</small>
+          </div>
+          <div class="analysis-metric">
+            <span>حباب طلای آبشده / ۱۸ عیار</span>
+            <strong class="color-pos">۰٪ (نزدیک به صفر)</strong>
+            <small>امن‌ترین ابزار حفظ ارزش بدون ریسک حباب</small>
+          </div>
+          <div class="analysis-metric">
+            <span>ریسک افت ناگهانی حباب</span>
+            <strong style="color:var(--brand-gold);">متوسط به بالا</strong>
+            <small>در قطعات سکه با نوسان انتظارات تورمی</small>
+          </div>
+          <div class="analysis-metric">
+            <span>استراتژی پیشنهادی مدیریت ریسک</span>
+            <strong class="color-pos">خرید پله‌ای (DCA)</strong>
+            <small>پراکندگی زمانی خرید جهت کاهش میانگین</small>
+          </div>
+        </div>
+
+        <div class="analysis-insight-cards">
+          <article>
+            <span>۱</span>
+            <p>در فازهای افزایش شدید حباب سکه، تغییر پورتفوی به سمت <b>طلای آبشده و شمش طلا</b> ریسک تخلیه ناگهانی حباب را به صفر می‌رساند.</p>
+          </article>
+          <article>
+            <span>۲</span>
+            <p>تنوع‌بخشی به دارایی‌ها (نقره، طلا و تتر) از آسیب‌پذیری در برابر نوسانات یک‌باره تک‌بازاری به طور کامل جلوگیری می‌کند.</p>
+          </article>
+          <article>
+            <span>۳</span>
+            <p>هرگز کل سرمایه را در یک نقطه زمانی وارد نکنید؛ تقسیم نقدینگی به ۳ الی ۵ پله خرید، بهترین سپر دفاعی در برابر اصلاحات غیرمنتظره است.</p>
+          </article>
+        </div>
+
+        <div class="analysis-method-note">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          <span>سپر مدیریت ریسک: حفاظت از سبد دارایی با تمرکز بر وزن حباب قیمتی، ابزارهای بدون کارمزد و ورود چندمرحله‌ای (DCA).</span>
+        </div>
+      `;
+    }
+  },
+
+  renderPortfolio() {
+    StorageService.loadPortfolio();
+    const tableBody = document.getElementById('portfolioTableBody');
+    if (!tableBody) return;
+
+    if (AppState.portfolio.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:36px; color:var(--text-muted);">
+        هنوز هیچ دارایی در سبد شما ثبت نشده است. با زدن دکمه <b>«ثبت دارایی جدید»</b> طلا، نقره، سکه یا ارزهای خود را اضافه کنید.
+      </td></tr>`;
+      document.getElementById('portTotalCurrentVal').textContent = '۰ تومان';
+      document.getElementById('portTotalInvestedVal').textContent = '۰ تومان';
+      document.getElementById('portTotalPnlVal').textContent = '۰ تومان';
+      document.getElementById('portTotalPnlPct').textContent = '۰.۰٪';
+      return;
+    }
+
+    const allItems = UI.getAllFlatItems();
+    const itemMap = new Map(allItems.map(i => [i.key, i]));
+
+    let totalInvested = 0;
+    let totalCurrent = 0;
+
+    tableBody.innerHTML = AppState.portfolio.map(hold => {
+      const liveItem = itemMap.get(hold.key);
+      const currentUnitRate = liveItem ? liveItem.toman : hold.buyPrice;
+      const currentVal = currentUnitRate * hold.qty;
+      const investedVal = hold.buyPrice * hold.qty;
+
+      totalInvested += investedVal;
+      totalCurrent += currentVal;
+
+      const pnlVal = currentVal - investedVal;
+      const pnlPct = investedVal > 0 ? ((pnlVal / investedVal) * 100) : 0;
+      const isPositive = pnlVal >= 0;
+
+      return `
+        <tr>
+          <td>
+            <div class="table-item-name">
               <span>${liveItem ? liveItem.icon : '💼'}</span>
               <div>
                 <b>${hold.title}</b>
-                <small style="display:block; color:var(--text-muted); font-size:0.74rem;">تاریخ ثبت: ${hold.date}</small>
+                <small style="display:block; color:var(--text-muted); font-size:0.75rem;">ثبت شده در: ${hold.date}</small>
               </div>
             </div>
           </td>
           <td><b>${hold.qty.toLocaleString('fa-IR')} ${hold.unit}</b></td>
           <td>${Utils.formatNumber(hold.buyPrice)} تومان</td>
           <td><strong style="color:var(--gold-dark);">${Utils.formatNumber(currentUnitRate)}</strong> تومان</td>
-          <td><strong style="font-size:0.98rem;">${Utils.formatNumber(currentVal)}</strong> <small>تومان</small></td>
+          <td><strong>${Utils.formatNumber(currentVal)}</strong> تومان</td>
           <td>
             <div style="line-height:1.4;">
               <span class="change compact ${isPositive ? 'positive' : 'negative'}" style="font-weight:700;">
@@ -1273,7 +1555,6 @@ const UI = {
       const curPrice = liveItem ? liveItem.toman : 0;
       const triggered = a.direction === 'above' ? curPrice >= a.targetPrice : curPrice <= a.targetPrice;
 
-      // Distance to target %
       let distanceHtml = '';
       if (curPrice > 0 && a.targetPrice > 0) {
         const diff = a.targetPrice - curPrice;
